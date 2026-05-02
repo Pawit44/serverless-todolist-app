@@ -1,0 +1,18 @@
+node_modules
+npm-debug.log
+
+# Environment Variables (ใช้ --env-file หรือใส่ใน Docker Compose แทน)
+.env
+
+# Git
+.git
+.gitignore
+
+# OS files ไฟล์ขยะที่ OS เก็บไว้
+.DS_Store
+thumbs.db
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
