@@ -3,9 +3,9 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: todolist
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin1234
+      POSTGRES_DB: tododb
     ports:
       - "5432:5432"
 
@@ -13,12 +13,13 @@ services:
     build: 
       context: ./app/backend
     ports:
-      - "5000:5000"
+      - "8000:8000"
     environment:
       - DB_HOST=db
-      - DB_USER=myuser
-      - DB_PASSWORD=mypassword
-      - DB_NAME=todolist
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=admin1234
+      - DB_NAME=tododb
     depends_on:
       - db
 

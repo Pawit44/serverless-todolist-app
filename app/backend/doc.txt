@@ -7,3 +7,10 @@
 
 ติดตั้ง Package เพิ่มเติม
 - npm install pg dotenv เพื่อให้ใช้ .env ได้
+
+Run Compose Test
+- docker compose up -d --build
+
+เปิด Database
+- docker-compose exec db psql -U {myuser} -d {todolist}
+  (คำอธิบาย: สั่งให้เข้าไปที่ service ชื่อ db รันโปรแกรม psql โดยใช้ user myuser และเลือกฐานข้อมูล todolist)

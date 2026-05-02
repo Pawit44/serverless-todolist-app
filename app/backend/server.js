@@ -89,7 +89,7 @@ app.delete('/todos/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
+  
 app.listen(PORT, () => {
-  console.log(`[ SYS ] Server is running on: http://localhost:${PORT}`);
+  console.log(`[ SYS ] Server is running on: http://${process.env.HOST}:${PORT}`);
 });
