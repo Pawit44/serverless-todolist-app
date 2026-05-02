@@ -27,13 +27,16 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                echo 'Building Docker Images...'
+                echo 'Building Docker Images with API URL...'
                 script {
-                    // Build Frontend
-                    sh "docker build -t ${DOCKER_USER}/todo-frontend:${IMAGE_TAG} ./app/frontend"
-                    sh "docker build -t ${DOCKER_USER}/todo-frontend:latest ./app/frontend"
+                    // กำหนด URL ของ Backend (Port 30081 ตามที่เราเปิด NodePort ไว้)
+                    def apiUrl = "http://localhost:30081"
                     
-                    // Build Backend
+                    // เพิ่ม --build-arg เข้าไปในคำสั่ง build ของ Frontend
+                    sh "docker build --build-arg NEXT_PUBLIC_API_URL=${apiUrl} -t ${DOCKER_USER}/todo-frontend:${IMAGE_TAG} ./app/frontend"
+                    sh "docker build --build-arg NEXT_PUBLIC_API_URL=${apiUrl} -t ${DOCKER_USER}/todo-frontend:latest ./app/frontend"
+                    
+                    // Backend Build เหมือนเดิม (ไม่ต้องใช้ build-arg)
                     sh "docker build -t ${DOCKER_USER}/todo-backend:${IMAGE_TAG} ./app/backend"
                     sh "docker build -t ${DOCKER_USER}/todo-backend:latest ./app/backend"
                 }
