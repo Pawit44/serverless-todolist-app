@@ -1,4 +1,4 @@
-� สเตปที่ 1: ปลุกระบบพื้นฐาน (Start Infrastructure)
+🟢 สเตปที่ 1: ปลุกระบบพื้นฐาน (Start Infrastructure)
 สิ่งแรกที่ต้องทำคือทำให้เครื่องคอมพิวเตอร์ของคุณพร้อมสำหรับระบบ Container และ Kubernetes ก่อน
 
 เปิด Docker Desktop: เปิดโปรแกรม Docker Desktop ขึ้นมา และรอจนกว่าไอคอนจะขึ้นสีเขียว (Engine Running)
@@ -12,8 +12,9 @@
 
 ปลุก Jenkins ด้วยคำสั่ง:
 
-Bash
+```bash
 docker compose -f docker-compose.jenkins.yml up -d
+```
 (หมายเหตุ: ถ้าไฟล์ compose ของคุณชื่อ docker-compose.yml เฉยๆ ก็ใช้ docker compose up -d ได้เลยครับ)
 
 เข้าไปที่หน้าเว็บ http://localhost:8080 เพื่อเช็คว่า Jenkins พร้อมทำงานแล้ว
@@ -36,10 +37,11 @@ docker compose -f docker-compose.jenkins.yml up -d
 
 เซฟงานลง Git:
 
-Bash
+```bash
 git add .
 git commit -m "feat: อธิบายว่าวันนี้ทำอะไรไปบ้าง"
 git push origin dev
+```
 🤖 สเตปที่ 5: สั่งหุ่นยนต์ทำงาน (Trigger CI/CD)
 ขั้นตอนนี้คือการปล่อยให้ระบบอัตโนมัติทำงานแทนคุณ
 
@@ -73,15 +75,18 @@ git push origin dev
 
 ดูว่ามี Pods อะไรกำลังรันอยู่บ้าง (และรอดูกล่องติด Error):
 
-Bash
+```bash
 kubectl get pods
+```
 บังคับลบ Pods ทิ้ง (เพื่อให้ K8s ดึง Image ใหม่แบบชัวร์ๆ 100%):
 
-Bash
+```bash
 kubectl delete pods -l app=todo
+```
 ดู Log ข้างใน Pod กรณีแอปพัง:
 
-Bash
+```bash
 kubectl logs <ชื่อ-pod-ที่ได้จากคำสั่งแรก>
+```
 💡 บทสรุปจำง่ายๆ:
 เปิด Docker -> สตาร์ท Jenkins -> แก้โค้ด -> Push Git -> กด Build Now -> เช็คเว็บ 30080
