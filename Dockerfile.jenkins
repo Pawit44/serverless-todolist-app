@@ -1,20 +1,26 @@
 # ทำให้ Jenkins รู้จักคำสั่ง Docker
-# ใช้ Jenkins ตัวล่าสุดเป็นฐาน
+# ใช้ Jenkins ตัวเดิมที่เราทำไว้
 FROM jenkins/jenkins:lts
 
 USER root
 
-# ติดตั้งโปรแกรมพื้นฐาน, Docker, และ Ansible
+# ติดตั้งโปรแกรมพื้นฐาน, Docker, Ansible และเครื่องมือช่วยเหลือ
 RUN apt-get update && apt-get install -y \
     docker.io \
     wget \
     unzip \
-    ansible
+    ansible \
+    curl
 
-# ดาวน์โหลดและติดตั้ง Terraform
+# ติดตั้ง Terraform (ตัวเดิม)
 RUN wget https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip && \
     unzip terraform_1.5.7_linux_amd64.zip && \
     mv terraform /usr/local/bin/ && \
     rm terraform_1.5.7_linux_amd64.zip
+
+# เพิ่มการติดตั้ง kubectl เข้าไป
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    chmod +x kubectl && \
+    mv kubectl /usr/local/bin/
 
 USER jenkins

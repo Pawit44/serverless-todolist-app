@@ -10,6 +10,8 @@ services:
       - jenkins_home:/var/jenkins_home
       # บรรทัดนี้สำคัญมาก! คือการเจาะท่อให้ Jenkins สั่งงาน Docker เครื่องหลักได้
       - /var/run/docker.sock:/var/run/docker.sock
+      # เพิ่มบรรทัดนี้เพื่อส่งค่าการเชื่อมต่อ K8s เข้าไปใน Jenkins
+      - C:/Users/yurik/.kube/config:/var/jenkins_home/.kube/config:ro
 
 volumes:
   jenkins_home:
