@@ -95,8 +95,7 @@ pipeline {
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f deployment.yaml'
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f service.yaml'
                     
-                    // ถ้าทำ db.yaml ด้วยก็เปิดคอมเมนต์บรรทัดนี้ได้เลย
-                    // sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f db.yaml' 
+                    sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f db.yaml' 
                     
                     echo 'Deployment Complete! Access at http://localhost:30080'
                 }

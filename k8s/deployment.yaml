@@ -24,3 +24,9 @@ spec:
         env:
         - name: DB_HOST
           value: "db-service"
+        - name: DB_USER       # เพิ่มเข้ามา
+          value: "postgres"
+        - name: DB_PASSWORD   # เพิ่มเข้ามา
+          value: "admin1234"
+        - name: DB_NAME       # เพิ่มเข้ามา
+          value: "tododb" 
