@@ -2,11 +2,19 @@
 # ใช้ Jenkins ตัวล่าสุดเป็นฐาน
 FROM jenkins/jenkins:lts
 
-# สลับเป็น root เพื่อลงโปรแกรมเพิ่ม
 USER root
 
-# ติดตั้ง Docker CLI เข้าไปในตัว Jenkins
-RUN apt-get update && apt-get install -y docker.io
+# ติดตั้งโปรแกรมพื้นฐาน, Docker, และ Ansible
+RUN apt-get update && apt-get install -y \
+    docker.io \
+    wget \
+    unzip \
+    ansible
 
-# สลับกลับเป็น user jenkins เพื่อความปลอดภัย
+# ดาวน์โหลดและติดตั้ง Terraform
+RUN wget https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip && \
+    unzip terraform_1.5.7_linux_amd64.zip && \
+    mv terraform /usr/local/bin/ && \
+    rm terraform_1.5.7_linux_amd64.zip
+
 USER jenkins

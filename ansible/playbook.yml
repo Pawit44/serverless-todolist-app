@@ -1,0 +1,14 @@
+---
+- name: Prepare Environment for Kubernetes
+  # ระบุให้ทำงานบนเครื่อง local (ซึ่งก็คือเครื่อง Jenkins)
+  hosts: local 
+  tasks:
+    - name: Create deployment directory
+      file:
+        path: /tmp/k8s-deployment
+        state: directory
+        mode: '0755'
+
+    - name: Print success message
+      debug:
+        msg: "Ansible successfully configured the environment for deployment!"

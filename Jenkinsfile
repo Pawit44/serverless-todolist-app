@@ -58,6 +58,32 @@ pipeline {
             }
         }
         
-        // Stage สำหรับ Deploy ด้วย Terraform/Ansible จะถูกเพิ่มใน Phase 3-4[cite: 1]
+        // ----------------------------------------------------
+        // ส่วนที่เพิ่มใหม่สำหรับ Phase 3: Terraform & Ansible 
+        // ----------------------------------------------------
+        
+        stage('Provision Infra (Terraform)') {
+            steps {
+                echo 'Provisioning Infrastructure with Terraform...'
+                dir('terraform') {
+                    // สั่งให้ Terraform ทำงานตามโค้ดที่เราเขียนไว้[cite: 1]
+                    sh 'terraform init'
+                    sh 'terraform plan'
+                    // สั่ง apply แบบ auto-approve เพื่อไม่ต้องรอกด yes[cite: 1]
+                    sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+
+        stage('Configure Env (Ansible)') {
+            steps {
+                echo 'Configuring Environment with Ansible...'
+                dir('ansible') {
+                    // ให้ Ansible รันตั้งค่าโดยอ่าน Inventory ที่ Terraform สร้างให้[cite: 1]
+                    sh 'ansible-playbook -i inventory playbook.yml'
+                }
+            }
+        }
     }
 }
+
