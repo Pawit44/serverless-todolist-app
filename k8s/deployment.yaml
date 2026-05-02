@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: todo
+  template:
+    metadata:
+      labels:
+        app: todo
+    spec:
+      containers:
+      - name: frontend
+        image: pawit44/todo-frontend:latest
+        ports:
+        - containerPort: 3000
+      - name: backend
+        image: pawit44/todo-backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DB_HOST
+          value: "db-service"

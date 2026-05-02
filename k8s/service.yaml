@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-service
+spec:
+  type: NodePort[cite:1]
+  selector:
+    app: todo
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+      nodePort: 30080 # พอร์ตภายนอกที่ใช้เข้าเว็บตามเอกสาร

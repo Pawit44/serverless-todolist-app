@@ -84,6 +84,20 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo 'Deploying to Kubernetes Cluster...'
+                dir('k8s') {
+                    // ใช้คำสั่ง kubectl apply เพื่อรันแอป[cite: 1]
+                    sh 'kubectl apply -f deployment.yaml'
+                    sh 'kubectl apply -f service.yaml'
+                    sh 'kubectl apply -f db.yaml'
+                    
+                    echo 'Deployment Complete! Access at http://localhost:30080'
+                }
+            }
+        }
     }
 }
 
