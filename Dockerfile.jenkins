@@ -1,0 +1,12 @@
+# ทำให้ Jenkins รู้จักคำสั่ง Docker
+# ใช้ Jenkins ตัวล่าสุดเป็นฐาน
+FROM jenkins/jenkins:lts
+
+# สลับเป็น root เพื่อลงโปรแกรมเพิ่ม
+USER root
+
+# ติดตั้ง Docker CLI เข้าไปในตัว Jenkins
+RUN apt-get update && apt-get install -y docker.io
+
+# สลับกลับเป็น user jenkins เพื่อความปลอดภัย
+USER jenkins
