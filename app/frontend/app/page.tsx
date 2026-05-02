@@ -36,7 +36,7 @@ export default function TodoPage() {
   const startTime = useState(() => Date.now())[0];
 
   const fetchTodos = useCallback(async () => {
-    const res = await fetch(`${API_URL}/todos`);
+    const res = await fetch(`http://localhost:30081/todos`);
     const data = await res.json();
     setTodos(data);
   }, []);
@@ -57,7 +57,7 @@ export default function TodoPage() {
   const addTodo = async () => {
     if (!input.trim()) return;
     const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    await fetch(`${API_URL}/todos?task=${encodeURIComponent(input)}&prio=${prio}&time=${time}`, {
+    await fetch(`http://localhost:30081/todos?task=${encodeURIComponent(input)}&prio=${prio}&time=${time}`, {
       method: 'POST',
     });
     setInput('');
@@ -65,14 +65,14 @@ export default function TodoPage() {
   };
 
   const toggleDone = async (id: number) => {
-    await fetch(`${API_URL}/todos/${id}/toggle`, { method: 'PATCH' });
+    await fetch(`http://localhost:30081/todos/${id}/toggle`, { method: 'PATCH' });
     setTodos(prev =>
       prev.map(t => (t.id === id ? { ...t, done: !t.done } : t))
     );
   };
 
   const deleteTodo = async (id: number) => {
-    await fetch(`${API_URL}/todos/${id}`, { method: 'DELETE' });
+    await fetch(`http://localhost:30081/todos/${id}`, { method: 'DELETE' });
     fetchTodos();
   };
 

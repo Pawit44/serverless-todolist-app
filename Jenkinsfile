@@ -27,16 +27,13 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                echo 'Building Docker Images with API URL...'
+                echo 'Building Docker Images (No Cache)...'
                 script {
-                    // กำหนด URL ของ Backend (Port 30081 ตามที่เราเปิด NodePort ไว้)
-                    def apiUrl = "http://localhost:30081"
+                    // ใส่ --no-cache เพื่อบังคับให้มันสร้างใหม่จากศูนย์ 100%
+                    sh "docker build --no-cache -t ${DOCKER_USER}/todo-frontend:${IMAGE_TAG} ./app/frontend"
+                    sh "docker build -t ${DOCKER_USER}/todo-frontend:latest ./app/frontend"
                     
-                    // เพิ่ม --build-arg เข้าไปในคำสั่ง build ของ Frontend
-                    sh "docker build --build-arg NEXT_PUBLIC_API_URL=${apiUrl} -t ${DOCKER_USER}/todo-frontend:${IMAGE_TAG} ./app/frontend"
-                    sh "docker build --build-arg NEXT_PUBLIC_API_URL=${apiUrl} -t ${DOCKER_USER}/todo-frontend:latest ./app/frontend"
-                    
-                    // Backend Build เหมือนเดิม (ไม่ต้องใช้ build-arg)
+                    // ส่วน Backend ไว้เหมือนเดิมได้ครับ
                     sh "docker build -t ${DOCKER_USER}/todo-backend:${IMAGE_TAG} ./app/backend"
                     sh "docker build -t ${DOCKER_USER}/todo-backend:latest ./app/backend"
                 }
