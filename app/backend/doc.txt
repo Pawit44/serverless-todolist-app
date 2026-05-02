@@ -1,0 +1,9 @@
+1. npm init -y
+
+ติดตั้ง Package ที่จำเป็น
+- npm install express cors
+- npm install --save-dev nodemon
+
+
+ติดตั้ง Package เพิ่มเติม
+- npm install pg dotenv เพื่อให้ใช้ .env ได้
