@@ -23,7 +23,7 @@ const PRIO_LABELS: Record<Priority, string> = {
   high: '[ HIGH ]',
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:30081';
 
 export default function TodoPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
