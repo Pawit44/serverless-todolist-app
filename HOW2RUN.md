@@ -1,87 +1,98 @@
-🟢 สเตปที่ 1: ปลุกระบบพื้นฐาน (Start Infrastructure)
-สิ่งแรกที่ต้องทำคือทำให้เครื่องคอมพิวเตอร์ของคุณพร้อมสำหรับระบบ Container และ Kubernetes ก่อน
+🚀 CI/CD Workflow สำหรับ To-Do App
 
-เปิด Docker Desktop: เปิดโปรแกรม Docker Desktop ขึ้นมา และรอจนกว่าไอคอนจะขึ้นสีเขียว (Engine Running)
+(Docker + Kubernetes + Jenkins)
 
-เช็ค Kubernetes: สังเกตที่มุมซ้ายล่างของ Docker Desktop ต้องมีไอคอน Kubernetes สีเขียวด้วย (แปลว่าหมู่บ้านเซิร์ฟเวอร์พร้อมทำงานแล้ว)
+📌 Overview (ภาพรวม)
 
-🏭 สเตปที่ 2: เปิดโรงงาน Jenkins (Start CI/CD Server)
-จำไว้เสมอว่า ตอนนี้เราจะไม่รันตัวแอปพลิเคชัน (Todo App) ด้วยคำสั่ง docker compose อีกต่อไปแล้ว เราจะรันแค่ Jenkins เพื่อให้มันตื่นขึ้นมารอรับคำสั่งครับ
+Workflow นี้คือการทำให้การ deploy แอปเป็นอัตโนมัติทั้งหมด
 
-เปิด Terminal ชี้ไปที่โฟลเดอร์หลักของโปรเจกต์
+💡 จำสั้นๆ:
+เขียนโค้ด → push → กด build → ระบบทำที่เหลือให้หมด
 
-ปลุก Jenkins ด้วยคำสั่ง:
+🟢 Step 1: Start Infrastructure (ปลุกระบบพื้นฐาน)
 
-Bash
+เตรียมเครื่องให้พร้อมก่อน
+
+เปิด Docker Desktop
+รอให้ขึ้น Engine Running
+เปิด Kubernetes
+มุมซ้ายล่างต้องเป็นสีเขียว ✅
+แปลว่า cluster พร้อมแล้ว
+🏭 Step 2: Start Jenkins (เปิดโรงงาน CI/CD)
+
+เรา “ไม่ต้องรันแอปเอง” แล้วนะ
+รันแค่ Jenkins พอ
+
 docker compose -f docker-compose.jenkins.yml up -d
-(หมายเหตุ: ถ้าไฟล์ compose ของคุณชื่อ docker-compose.yml เฉยๆ ก็ใช้ docker compose up -d ได้เลยครับ)
 
-เข้าไปที่หน้าเว็บ http://localhost:8080 เพื่อเช็คว่า Jenkins พร้อมทำงานแล้ว
+ถ้าไฟล์ชื่อ docker-compose.yml:
 
-💻 สเตปที่ 3: ลงมือเขียนโค้ด (Development Phase)
-ตอนนี้ระบบหลังบ้านพร้อมหมดแล้ว คุณสามารถสวมหมวก "Software Engineer" และเริ่มทำงานได้เลย
+docker compose up -d
 
-เปิด VS Code หรือ Editor ของคุณ
+เข้า Jenkins:
 
-แก้ไขโค้ด Frontend (Next.js) หรือ Backend (Node.js) ตามที่คุณต้องการ
+http://localhost:8080
+💻 Step 3: Development (เขียนโค้ด)
 
-การทดสอบตอนเขียนโค้ด (Optional):
+เริ่มทำงานได้เลย
 
-หากคุณแค่แก้ UI เล็กๆ น้อยๆ คุณสามารถรัน npm run dev ในโฟลเดอร์ frontend เพื่อดูผลลัพธ์แบบเร็วๆ บน localhost:3000 ได้ครับ (แต่ไม่ต้องไปยุ่งกับพอร์ต 30080 หรือ K8s นะครับ)
+เปิด VS Code
+แก้:
+Frontend (Next.js)
+Backend (Node.js)
+🧪 Test แบบเร็ว (Optional)
+cd frontend
+npm run dev
 
-🚀 สเตปที่ 4: ส่งโค้ดขึ้นระบบ (Version Control)
-เมื่อคุณเขียนโค้ดเสร็จและพอใจกับผลลัพธ์แล้ว ก็ถึงเวลาส่งงานเข้าสายพานการผลิตครับ
+เปิด:
 
-เปิด Terminal ใน VS Code
+http://localhost:3000
 
-เซฟงานลง Git:
+⚠️ ใช้แค่ดู UI ไม่เกี่ยวกับ Kubernetes
 
-Bash
+🚀 Step 4: Push Code (ส่งงานขึ้น Git)
 git add .
-git commit -m "feat: อธิบายว่าวันนี้ทำอะไรไปบ้าง"
+git commit -m "feat: อธิบายสิ่งที่ทำ"
 git push origin dev
-🤖 สเตปที่ 5: สั่งหุ่นยนต์ทำงาน (Trigger CI/CD)
-ขั้นตอนนี้คือการปล่อยให้ระบบอัตโนมัติทำงานแทนคุณ
+🤖 Step 5: Trigger CI/CD (สั่ง Jenkins ทำงาน)
+ไปที่:
+http://localhost:8080
+เข้า Pipeline
+กด:
+▶️ Build Now
+Jenkins จะทำ:
+ดึงโค้ดจาก Git
+Build Docker Image
+Deploy ไป Kubernetes
+Restart Pods
 
-กลับไปที่หน้าเว็บ Jenkins (http://localhost:8080)
+☕ จากนี้ปล่อยให้มันทำงานเอง
 
-เข้าไปที่โปรเจกต์ Pipeline ของคุณ
+🌐 Step 6: Verify (ตรวจงาน)
 
-กดปุ่ม ▶️ Build Now
+เปิดแบบ Incognito แล้วเข้า:
 
-นั่งจิบกาแฟรอ... ให้ Jenkins ทำการ:
+http://localhost:30080
 
-ดึงโค้ดล่าสุดจาก GitHub
+ลอง:
 
-สร้าง Docker Image ตัวใหม่ (ทั้ง Frontend/Backend)
+เพิ่มข้อมูล
+ลบข้อมูล
 
-อัปเดต Image ขึ้นไปที่ Kubernetes
+เช็คว่า:
 
-สั่ง Restart Pods เพื่อใช้งานโค้ดใหม่ล่าสุด
-
-🌐 สเตปที่ 6: ตรวจสอบผลงาน (Verify)
-เมื่อ Jenkins ขึ้นไฟเขียวครบทุก Stage แล้ว ก็ถึงเวลาตรวจรับงานครับ
-
-เปิดบราวเซอร์ (แนะนำให้เปิดโหมดไม่ระบุตัวตน / Incognito เพื่อป้องกันบราวเซอร์จำ Cache เก่า)
-
-เข้าไปที่หน้าเว็บ http://localhost:30080
-
-ทดลองกดใช้งาน เพิ่ม/ลบ ข้อมูล เพื่อยืนยันว่าโค้ดใหม่ของคุณทำงานร่วมกับ Database บน Kubernetes ได้อย่างสมบูรณ์
-
-🛠️ คำสั่งฉุกเฉิน (Troubleshooting / ไม้ตาย)
-ในกรณีที่ระบบมีปัญหา หรือ Jenkins ขึ้นสีเขียวแต่หน้าเว็บยังเป็นของเก่า ให้ใช้คำสั่งเหล่านี้ใน Terminal ครับ:
-
-ดูว่ามี Pods อะไรกำลังรันอยู่บ้าง (และรอดูกล่องติด Error):
-
-Bash
+ใช้โค้ดใหม่จริง
+เชื่อม DB ได้
+🛠️ Troubleshooting (แก้ปัญหา)
+🔍 ดู Pods
 kubectl get pods
-บังคับลบ Pods ทิ้ง (เพื่อให้ K8s ดึง Image ใหม่แบบชัวร์ๆ 100%):
-
-Bash
+🔥 ลบ Pods (บังคับให้โหลดใหม่)
 kubectl delete pods -l app=todo
-ดู Log ข้างใน Pod กรณีแอปพัง:
+📜 ดู Logs
+kubectl logs <pod-name>
+🧠 Summary (สรุปสั้นมาก)
+Docker → Jenkins → Code → Push → Build → Check
 
-Bash
-kubectl logs <ชื่อ-pod-ที่ได้จากคำสั่งแรก>
-💡 บทสรุปจำง่ายๆ:
-เปิด Docker -> สตาร์ท Jenkins -> แก้โค้ด -> Push Git -> กด Build Now -> เช็คเว็บ 30080
+หรือแบบบ้านๆ:
+
+“เขียน → push → กดปุ่ม → เสร็จ”
