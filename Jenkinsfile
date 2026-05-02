@@ -89,10 +89,15 @@ pipeline {
             steps {
                 echo 'Deploying to Kubernetes Cluster...'
                 dir('k8s') {
-                    // ใช้คำสั่ง kubectl apply เพื่อรันแอป[cite: 1]
-                    sh 'kubectl apply -f deployment.yaml'
-                    sh 'kubectl apply -f service.yaml'
-                    sh 'kubectl apply -f db.yaml'
+                    // ก๊อปปี้ไฟล์ config และแปลง 127.0.0.1/localhost ให้ชี้ทะลุออกไปหา Kubernetes บนเครื่อง Host
+                    sh 'sed -e "s/127.0.0.1/host.docker.internal/g" -e "s/localhost/host.docker.internal/g" ~/.kube/config > ./kubeconfig-jenkins'
+                    
+                    // รันคำสั่ง deploy โดยใช้ไฟล์ config ที่เราเพิ่งเสกขึ้นมา
+                    sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f deployment.yaml'
+                    sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f service.yaml'
+                    
+                    // ถ้าคุณทำไฟล์ db.yaml สำหรับ Database ไว้ด้วย ก็เอาคอมเมนต์บรรทัดล่างนี้ออกได้เลยครับ
+                    // sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f db.yaml' 
                     
                     echo 'Deployment Complete! Access at http://localhost:30080'
                 }
