@@ -211,3 +211,98 @@ Build Now
 ---
 
 ถ้าจะต่อ Phase ถัดไป (Kubernetes / Cloud Deploy) บอกได้เลย เดี๋ยวจัด flow ให้แบบเข้าใจง่าย ๆ ทีละขั้น 🚀
+
+---
+
+# 🏗️ Phase 3: Infrastructure & Configuration Management
+
+เป้าหมายของเฟสนี้คือการเตรียมเครื่องเซิร์ฟเวอร์และสภาพแวดล้อมให้พร้อม ด้วยการเขียนโค้ด (Infrastructure as Code) แทนการไปคลิกติดตั้งเอง
+
+## Step 1: สร้างโครงสร้างพื้นฐานด้วย Terraform
+
+สร้างไฟล์ main.tf เพื่อกำหนดสเปคของเครื่องเซิร์ฟเวอร์หรือสภาพแวดล้อมที่ต้องการ
+
+เปิด Terminal เข้าไปที่โฟลเดอร์ที่มีไฟล์ Terraform แล้วรันคำสั่งดาวน์โหลดเครื่องมือ:
+
+```bash
+terraform init
+```
+
+รันคำสั่งเพื่อตรวจสอบความถูกต้องของโค้ดและดูแผนการสร้าง:
+
+```bash
+terraform plan
+```
+
+รันคำสั่งสร้างระบบจริง (ระบบจะสร้างเครื่องและจัดการ Network ตามที่เขียนไว้):
+
+```bash
+terraform apply -auto-approve
+```
+
+## Step 2: ติดตั้งโปรแกรมพื้นฐานด้วย Ansible
+
+สร้างไฟล์ inventory เพื่อระบุ IP Address ของเครื่องเซิร์ฟเวอร์ที่ Terraform เพิ่งสร้างเสร็จ
+
+สร้างไฟล์ playbook.yml และเขียนขั้นตอนการติดตั้งโปรแกรมที่จำเป็น (เช่น ติดตั้ง Docker, ติดตั้ง Kubernetes)
+
+รันคำสั่งเพื่อให้ Ansible วิ่งเข้าไปติดตั้งโปรแกรมในเซิร์ฟเวอร์เป้าหมาย:
+
+```bash
+ansible-playbook -i inventory playbook.yml
+```
+
+(หมายเหตุ: ในระบบอัตโนมัติเต็มรูปแบบ คำสั่งของ Terraform และ Ansible จะถูกนำไปใส่ไว้ให้ Jenkins เป็นผู้รันให้)
+
+---
+
+# ☸️ Phase 4: CI/CD Pipeline & Kubernetes
+
+เป้าหมายของเฟสนี้คือการนำแอปพลิเคชันไปรันบน Kubernetes และผูกระบบเข้ากับ Jenkins เพื่อให้เกิดการ Deploy อัตโนมัติทุกครั้งที่มีการอัปเดตโค้ด
+
+## Step 1: เตรียมไฟล์ตั้งค่า Kubernetes (K8s Manifests)
+
+สร้างโฟลเดอร์ k8s/ ในโปรเจกต์ และสร้างไฟล์ YAML จำนวน 3 ไฟล์เพื่อเป็นแปลนให้ K8s:
+
+- db.yaml: เขียนโค้ดสร้าง Database (PostgreSQL) พร้อมตั้งค่า Environment Variables
+- deployment.yaml: เขียนโค้ดกำหนดให้ K8s ดึง Image ของ Frontend และ Backend มารันเป็น Pods โดยตั้งค่า imagePullPolicy: Always เพื่อให้ใช้ Image ตัวล่าสุดเสมอ
+- service.yaml: เขียนโค้ดเปิดพอร์ต (NodePort) เพื่อให้คนภายนอกเข้ามาใช้งานแอปได้ (เช่น พอร์ต 30080 สำหรับเว็บ และ 30081 สำหรับ API)
+
+## Step 2: เขียนสคริปต์สั่งงาน Jenkins (Jenkinsfile)
+
+สร้างไฟล์ Jenkinsfile ในโฟลเดอร์หลักของโปรเจกต์ และกำหนดขั้นตอนการทำงาน (Stages) ดังนี้:
+
+- Stage 'Git Pull': สั่งให้ Jenkins ดึงโค้ดล่าสุดจาก GitHub
+- Stage 'Docker Build': สั่งรัน docker build เพื่อสร้าง Image ของ Frontend และ Backend
+
+จุดสำคัญ: ต้องใช้ --build-arg ส่งค่า URL ของ API (เช่น http://localhost:30081) เข้าไปตอน Build Frontend ด้วย
+
+- Stage 'Push to Docker Hub': สั่งให้ Jenkins ส่ง Image ที่สร้างเสร็จแล้วไปเก็บไว้ที่ Docker Hub
+- Stage 'Deploy to Kubernetes': สั่งให้ K8s นำไฟล์ตั้งค่าไปใช้งาน และบังคับรีสตาร์ทแอปพลิเคชัน:
+
+```bash
+kubectl apply -f k8s/
+kubectl rollout restart deployment todo-app
+```
+
+## Step 3: เริ่มต้นวงจร CI/CD (Developer Flow)
+
+เมื่อตั้งค่าทุกอย่างเสร็จแล้ว การทำงานจริงของโปรแกรมเมอร์จะเหลือเพียงแค่นี้:
+
+- พัฒนาโค้ด Frontend/Backend ในเครื่อง Local ให้เสร็จ
+- นำไฟล์เข้า Git และ Push โค้ดขึ้น GitHub:
+
+```bash
+git add .
+git commit -m "update application"
+git push origin dev
+```
+
+## Step 4: ให้ระบบทำงานอัตโนมัติ (Trigger Pipeline)
+
+- เข้าไปที่หน้าเว็บของ Jenkins
+- กดปุ่ม Build Now ที่โปรเจกต์ของคุณ
+- Jenkins จะทำงานตาม Jenkinsfile อัตโนมัติ (ดึงโค้ด -> สร้าง Image -> ส่งขึ้น Docker Hub -> สั่ง K8s อัปเดต)
+- เมื่อ Jenkins ทำงานเสร็จครบทุกขั้นตอน (ขึ้นสีเขียว) ผู้ใช้งานจะสามารถเข้าหน้าเว็บผ่านพอร์ตที่กำหนดไว้ และใช้งานแอปพลิเคชันเวอร์ชันล่าสุดได้ทันที
+
+

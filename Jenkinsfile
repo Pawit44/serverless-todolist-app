@@ -18,7 +18,7 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                // โปรเจกต์นี้เรายังไม่ได้เขียน Unit Test เชิงลึก เลยให้มัน Echo ไปก่อนครับ 
+                // โปรเจกต์นี้เรายังไม่ได้เขียน Unit Test เชิงลึก เลยให้มัน Echo ไปก่อน 
                 // หรือถ้าอยากเทสต์จริงๆ อาจจะใช้ npm install & npm run build เพื่อเช็คว่าโค้ดคอมไพล์ผ่านไหม
                 echo 'Building and Testing code...'
                 sh 'echo "Simulating tests... Passed!"'
@@ -33,7 +33,7 @@ pipeline {
                     sh "docker build --no-cache -t ${DOCKER_USER}/todo-frontend:${IMAGE_TAG} ./app/frontend"
                     sh "docker build -t ${DOCKER_USER}/todo-frontend:latest ./app/frontend"
                     
-                    // ส่วน Backend ไว้เหมือนเดิมได้ครับ
+                    // ส่วน Backend ไว้เหมือนเดิมได้
                     sh "docker build -t ${DOCKER_USER}/todo-backend:${IMAGE_TAG} ./app/backend"
                     sh "docker build -t ${DOCKER_USER}/todo-backend:latest ./app/backend"
                 }
@@ -89,7 +89,7 @@ pipeline {
             steps {
                 echo 'Deploying to Kubernetes Cluster...'
                 dir('k8s') {
-                    // เปลี่ยนมาระบุ Path เต็มๆ /var/jenkins_home/.kube/config แบบนี้ครับ
+                    // เปลี่ยนมาระบุ Path เต็มๆ /var/jenkins_home/.kube/config แบบนี้
                     sh 'sed -e "s/127.0.0.1/host.docker.internal/g" -e "s/localhost/host.docker.internal/g" /var/jenkins_home/.kube/config > ./kubeconfig-jenkins'
                     
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f deployment.yaml'
