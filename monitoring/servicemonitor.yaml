@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: todo-app-monitor
+  labels:
+    release: prometheus # <--- ต้องตรงกับชื่อตอนที่เรารัน Helm
+spec:
+  selector:
+    matchLabels:
+      app: todo-app     # <--- ต้องตรงกับ label ใน service.yaml ของแอปคุณ
+  endpoints:
+    - port: api         # <--- ชื่อพอร์ตใน service.yaml (พอร์ต 8000)
+      path: /metrics
+      interval: 15s
