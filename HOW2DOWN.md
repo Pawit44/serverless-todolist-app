@@ -36,6 +36,54 @@ kubectl delete -f k8s/
 
 ---
 
+## 5. ลบทุกอย่างใน Kubernetes (แอป + ฐานข้อมูล + Monitoring)
+
+รันคำสั่งเหล่านี้เพื่อเคลียร์ Resource ใน Cluster:
+
+```bash
+# ลบ Monitoring (Prometheus & Grafana)
+helm uninstall prometheus
+
+# ลบแอปและ ServiceMonitor
+kubectl delete -f deployment.yaml,service.yaml,servicemonitor.yaml
+
+# ลบข้อมูลที่ค้างอยู่ใน Database (PVC)
+kubectl delete pvc --all
+```
+
+## 6. ลบ Jenkins (Container)
+
+จากภาพ `docker ps` ของคุณ Jenkins รันอยู่ในชื่อ `serverless-project-practice-jenkins-1` ให้ใช้คำสั่ง Docker เพื่อหยุดและลบ:
+
+```bash
+# หยุดการทำงาน
+docker stop serverless-project-practice-jenkins-1
+
+# ลบ Container ทิ้ง
+docker rm serverless-project-practice-jenkins-1
+```
+
+> ถ้าคุณรันผ่าน Docker Compose สามารถไปที่โฟลเดอร์ที่มีไฟล์ `docker-compose.yml` แล้วใช้คำสั่ง `docker compose down` แทนได้ครับ
+
+## 7. ตรวจสอบความสะอาด
+
+หลังจากรันเสร็จ ลองเช็คอีกรอบ:
+
+```bash
+docker ps
+```
+
+ตอนนี้ Container ยั้วเยี้ยในลิสต์ของคุณควรจะหายไปทั้งหมดแล้วเครื่องจะกลับมาโล่ง 100% พร้อมสำหรับการรันใหม่ในครั้งหน้า
+
+⚠️ คำเตือนสุดท้าย:
+
+- Jenkins: ถ้าคุณไม่ได้ทำ Volume Mount ไว้ ข้อมูล Job หรือ Pipeline ที่ตั้งค่าไว้ใน Jenkins จะหายไป
+- Database: ข้อมูล Todo ที่เคยกรอกไว้จะหายเกลี้ยงเพราะเราลบ PVC ไปแล้ว
+
+ถ้ามั่นใจว่า Backup Dashboard JSON และ Push Code ขึ้น Git หมดแล้ว... กดรันได้เลยครับ! สะอาดแน่นอน 🧹✨
+
+---
+
 ## สรุปสถานะหลังปิดระบบ
 
 - **Code**: ปลอดภัยอยู่ในเครื่องและ GitHub
