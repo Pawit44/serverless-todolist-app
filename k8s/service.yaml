@@ -1,7 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: todo-service
+  name: todo-app
+  labels:                  # <--- เพิ่มส่วนนี้
+    app: todo-app
 spec:
   type: NodePort
   selector:

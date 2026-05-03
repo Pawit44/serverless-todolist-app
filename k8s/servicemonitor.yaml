@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: todo-app-monitor
+  labels:
+    release: monitoring    # บังคับใส่คำนี้เพื่อให้ Prometheus หาไฟล์นี้เจอ
+spec:
+  selector:
+    matchLabels:
+      app: todo-app        # ชี้ไปหา Service ของคุณที่มีป้ายชื่อว่า app: todo-app
+  endpoints:
+    - port: api            # ชี้ไปที่พอร์ตชื่อ "api" (port 8000) ตามที่คุณตั้งไว้
+      path: /metrics

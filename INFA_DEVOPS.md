@@ -100,6 +100,14 @@ docker compose up -d --build
 docker compose exec db psql -U postgres -d tododb
 ```
 
+หรือ
+
+```bash
+kubectl get pods
+kubectl exec -it <ชื่อ-pod-db-ที่เจอ> -- psql -U postgres -d tododb
+```
+
+
 เมื่อเข้าได้แล้วจะเห็น:
 
 ```bash
