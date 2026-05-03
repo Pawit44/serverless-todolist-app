@@ -17,6 +17,7 @@
 ```bash
 docker compose -f docker-compose.jenkins.yml up -d
 ```
+
   (หมายเหตุ: ถ้าไฟล์ compose ของคุณชื่อ docker-compose.yml เฉยๆ ก็ใช้ docker compose up -d ได้เลย)
 
 - เข้าไปที่หน้าเว็บ http://localhost:8080 เพื่อเช็คว่า Jenkins พร้อมทำงานแล้ว
