@@ -71,6 +71,7 @@ pool.connect()
 // ==========================================
 // [ Phase 5 ] Endpoint สำหรับให้ Prometheus มาดูดข้อมูล
 // ==========================================
+
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', client.register.contentType);
   res.end(await client.register.metrics());
