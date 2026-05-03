@@ -12,7 +12,6 @@ terraform {
 }
 
 provider "docker" {}
-
 # 1. สร้าง Network จริงๆ (Provisioning) 
 resource "docker_network" "todo_network" {
   name = "todo-app-network-${var.environment}"
