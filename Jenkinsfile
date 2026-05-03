@@ -66,10 +66,9 @@ pipeline {
             steps {
                 echo 'Provisioning Infrastructure with Terraform...'
                 dir('terraform') {
-                    // สั่งให้ Terraform ทำงานตามโค้ดที่เราเขียนไว้[cite: 1]
-                    sh 'terraform init'
+                    // เพิ่ม -upgrade เพื่อให้ Terraform ยอมเปลี่ยนเวอร์ชันตามที่แก้ใน main.tf
+                    sh 'terraform init -upgrade' 
                     sh 'terraform plan'
-                    // สั่ง apply แบบ auto-approve เพื่อไม่ต้องรอกด yes[cite: 1]
                     sh 'terraform apply -auto-approve'
                 }
             }
