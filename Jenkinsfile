@@ -94,6 +94,7 @@ pipeline {
                     
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f deployment.yaml'
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f service.yaml'
+                    sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f servicemonitor.yaml'
                     
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f db.yaml' 
                     echo 'Deployment Complete! Access at http://localhost:30080'
