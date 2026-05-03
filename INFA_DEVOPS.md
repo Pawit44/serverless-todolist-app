@@ -313,4 +313,171 @@ git push origin dev
 - Jenkins จะทำงานตาม Jenkinsfile อัตโนมัติ (ดึงโค้ด -> สร้าง Image -> ส่งขึ้น Docker Hub -> สั่ง K8s อัปเดต)
 - เมื่อ Jenkins ทำงานเสร็จครบทุกขั้นตอน (ขึ้นสีเขียว) ผู้ใช้งานจะสามารถเข้าหน้าเว็บผ่านพอร์ตที่กำหนดไว้ และใช้งานแอปพลิเคชันเวอร์ชันล่าสุดได้ทันที
 
+---
+
+# 📊 Phase 5: Prometheus & Grafana (Monitoring System)
+
+เอกสารนี้สรุปการสร้างระบบ Monitoring เพื่อตรวจจับสุขภาพของ Cluster และประสิทธิภาพของแอปพลิเคชัน โดยใช้ Prometheus ในการดึงข้อมูล (Scraping) และ Grafana ในการแสดงผล (Dashboard)
+
+## 🛠️ สิ่งที่ต้องเตรียม (Prerequisites)
+
+- Kubernetes Cluster: รันอยู่แล้ว (เช่น Docker Desktop หรือ Kind)
+- Helm: ติดตั้งเรียบร้อยแล้ว (บน Windows ใช้ `winget install Helm`)
+- Source Code: แอปพลิเคชัน Node.js ที่พร้อมแก้ไขโค้ด
+
+## 🚀 Step 1: ติดตั้ง Infrastructure พื้นฐาน
+
+เราใช้ `kube-prometheus-stack` ซึ่งเป็นแพ็กเกจมัดรวมที่มีทั้ง Prometheus, Grafana และ Alertmanager
+
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm install monitoring prometheus-community/kube-prometheus-stack
+```
+
+### การตรวจสอบ
+
+รันคำสั่ง:
+
+```bash
+kubectl get pods
+```
+
+รอจนกว่าทุก Pod จะขึ้นสถานะ `Running` (ประมาณ 2-5 นาที)
+
+## 💻 Step 2: แก้ไขโค้ดแอปให้พ่นค่า Metrics
+
+เพื่อให้ Prometheus ดึงข้อมูลได้ เราต้องเปิด Endpoint `/metrics` ใน Backend และใช้ Library `prom-client`
+
+### ติดตั้ง Library
+
+```bash
+cd app/backend
+npm install prom-client
+```
+
+### ตัวอย่างการเพิ่มโค้ดในไฟล์ `index.js`
+
+```javascript
+const client = require('prom-client');
+client.collectDefaultMetrics({ register: client.register });
+
+const todoCreatedCounter = new client.Counter({ name: 'todo_created_total', help: 'Total created' });
+const todoToggledCounter = new client.Counter({ name: 'todo_toggled_total', help: 'Total toggled' });
+const todoDeletedCounter = new client.Counter({ name: 'todo_deleted_total', help: 'Total deleted' });
+
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.end(await client.register.metrics());
+});
+
+app.post('/todos', async (req, res) => {
+  // ... logic บันทึก DB ...
+  todoCreatedCounter.inc();
+  // ... ส่ง response ...
+});
+```
+
+### จุดสำคัญ
+
+- ต้องเพิ่ม `.inc()` ใน API ที่เกี่ยวข้อง เช่น การสร้าง Todo, สลับสถานะ Todo, ลบ Todo
+- ต้อง Build Image ใหม่ และ Push ขึ้น Docker Hub
+- สั่ง `kubectl rollout restart deployment todo-app` เพื่อให้ Deployment โหลด Image ล่าสุด
+
+## 🔗 Step 3: เชื่อมต่อ Prometheus กับ App (ServiceMonitor)
+
+Prometheus จะไม่ดึงข้อมูลแอปโดยอัตโนมัติ เราต้องสร้าง `ServiceMonitor` เพื่อชี้ให้ Prometheus ตรวจสอบ Service ของเรา
+
+### ตัวอย่างไฟล์ `servicemonitor.yaml`
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: todo-app-monitor
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: todo-app
+  endpoints:
+    - port: api
+      path: /metrics
+```
+
+### คำสั่งใช้งาน
+
+```bash
+kubectl apply -f servicemonitor.yaml
+```
+
+### ตรวจสอบ
+
+- `kubectl get servicemonitor`
+- `kubectl get pods` เพื่อดูว่า Prometheus Operator รันปกติ
+
+## 📈 Step 4: สร้าง Custom Dashboard บน Grafana
+
+เจาะอุโมงค์เข้า Grafana:
+
+```bash
+kubectl port-forward svc/monitoring-grafana 8081:80
+```
+
+เปิดเว็บ:
+
+```text
+http://localhost:8081
+```
+
+Login:
+
+- User: `admin`
+- Password: `prom-operator`
+
+### สร้างกราฟ
+
+1. ไปที่ `+ Add` -> `Dashboard`
+2. เพิ่ม Panel ใหม่
+3. Data Source: เลือก `Prometheus`
+4. ใส่ Query (PromQL)
+
+ตัวอย่าง Panel:
+
+- `sum(todo_created_total)` ชื่อ: `Total Created`
+- `sum(todo_toggled_total)` ชื่อ: `Total Toggled`
+- `sum(todo_deleted_total)` ชื่อ: `Total Deleted`
+
+ใช้ `sum()` เพื่อรวมข้อมูลจากทุก Pod และป้องกันตัวเลขหายเมื่อ Pod Restart
+
+## 🚨 Troubleshooting Guide
+
+ปัญหาที่พบบ่อยและวิธีแก้ไข
+
+- Port-forward ใช้งานไม่ได้
+  - สาเหตุ: พอร์ต `8081` หรือ `9090` ถูกใช้งานอยู่
+  - แก้ไข: เปลี่ยนเป็นพอร์ตอื่น เช่น `8082:80`
+
+- Login Grafana ไม่ได้
+  - สาเหตุ: รหัสผ่านเริ่มต้นไม่ตรงหรือถูกเปลี่ยน
+  - แก้ไข: ใช้ `helm upgrade` ตั้งค่ารหัสใหม่ หรือดูค่าใน Secret ของ Grafana
+
+- Targets ใน Prometheus เป็น `DOWN`
+  - สาเหตุ: K8s ยังรัน Image เก่าที่ไม่มี `/metrics`
+  - แก้ไข: เพิ่ม `imagePullPolicy: Always` ใน Deployment และ `kubectl rollout restart deployment todo-app`
+
+- Grafana ขึ้น `No Data`
+  - สาเหตุ: Certificate บน Docker Desktop หรือ Prometheus ไม่สามารถดึงข้อมูลได้
+  - แก้ไข: ตั้งค่า Helm ให้ `kubelet.serviceMonitor.insecureSkipVerify=true` หรือเช็คว่า `ServiceMonitor` ชี้ไปยัง Service และ Path ถูกต้อง
+
+- ServiceMonitor ไม่ทำงาน
+  - สาเหตุ: Label `release: monitoring` ไม่ตรงกับชื่อที่ใช้ตอน `helm install`
+  - แก้ไข: ตรวจสอบชื่อ Release และ Label ให้ตรงกันเป๊ะ
+
+---
+
+> หมายเหตุ: เนื้อหาใหม่ส่วนนี้เพิ่มต่อท้ายจากเนื้อหาเดิมโดยไม่แก้ไขเนื้อหาเดิมเลย เพื่อให้ Phase 5 ครบถ้วนและอ่านง่ายที่สุด
+
 
