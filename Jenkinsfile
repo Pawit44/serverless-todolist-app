@@ -29,13 +29,13 @@ pipeline {
             steps {
                 echo 'Building Docker Images (No Cache)...'
                 script {
-                    // ใส่ --no-cache เพื่อบังคับให้มันสร้างใหม่จากศูนย์ 100%
+                    // 1. Frontend: Build ใส่ชื่อเวอร์ชัน แล้วใช้ tag แปะป้าย latest
                     sh "docker build --no-cache -t ${DOCKER_USER}/todo-frontend:${IMAGE_TAG} ./app/frontend"
-                    sh "docker build -t ${DOCKER_USER}/todo-frontend:latest ./app/frontend"
+                    sh "docker tag ${DOCKER_USER}/todo-frontend:${IMAGE_TAG} ${DOCKER_USER}/todo-frontend:latest"
                     
-                    // ส่วน Backend ไว้เหมือนเดิมได้
-                    sh "docker build -t ${DOCKER_USER}/todo-backend:${IMAGE_TAG} ./app/backend"
-                    sh "docker build -t ${DOCKER_USER}/todo-backend:latest ./app/backend"
+                    // 2. Backend: ทำวิธีเดียวกัน
+                    sh "docker build --no-cache -t ${DOCKER_USER}/todo-backend:${IMAGE_TAG} ./app/backend"
+                    sh "docker tag ${DOCKER_USER}/todo-backend:${IMAGE_TAG} ${DOCKER_USER}/todo-backend:latest"
                 }
             }
         }
@@ -89,7 +89,7 @@ pipeline {
             steps {
                 echo 'Deploying to Kubernetes Cluster...'
                 dir('k8s') {
-                    // เปลี่ยนมาระบุ Path เต็มๆ /var/jenkins_home/.kube/config แบบนี้
+                     // เปลี่ยนมาระบุ Path เต็มๆ /var/jenkins_home/.kube/config แบบนี้
                     sh 'sed -e "s/127.0.0.1/host.docker.internal/g" -e "s/localhost/host.docker.internal/g" /var/jenkins_home/.kube/config > ./kubeconfig-jenkins'
                     
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f deployment.yaml'
