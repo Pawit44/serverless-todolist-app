@@ -28,10 +28,10 @@ spec:
         image: postgres:15-alpine
         env:
         - name: POSTGRES_USER
-          value: "postgres" # หรือชื่อ user ที่คุณใช้
+          value: "postgres" # หรือชื่อ user ที่ใช้
         - name: POSTGRES_PASSWORD
-          value: "admin1234" # หรือรหัสผ่านที่คุณใช้
+          value: "admin1234" # หรือรหัสผ่านที่ใช้
         - name: POSTGRES_DB
-          value: "tododb" # หรือชื่อฐานข้อมูลที่คุณใช้
+          value: "tododb" # หรือชื่อฐานข้อมูลที่ใช้
         ports:
         - containerPort: 5432
