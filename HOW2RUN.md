@@ -173,7 +173,6 @@ kubectl port-forward svc/todo-service 8000:8000
 ```bash
 ngrok http 3000
 ```
-
 ### 4. เสกหน้า Dashboard (Import JSON)
 
 นำโครงสร้างกราฟที่เราออกแบบไว้มาแสดงผล
