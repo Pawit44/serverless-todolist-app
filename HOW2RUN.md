@@ -152,6 +152,7 @@ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -f 
 kubectl apply -f servicemonitor.yaml
 ```
 
+
 ### 3. เปิดอุโมงค์การเชื่อมต่อ (Port-Forward & ngrok)
 
 ทำให้เราเข้าถึงหน้าจอ Grafana ที่อยู่ใน Cluster ได้
