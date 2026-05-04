@@ -9,82 +9,164 @@
 - **Deployment**: Docker + Kubernetes
 - **CI/CD**: Jenkins Pipeline
 - **Monitoring**: Prometheus + Grafana
+- **Infrastructure as Code**: Terraform + Ansible
 
 ---
 
-## 📁 โครงสร้างโปรเจกต์
+## 📁 โครงสร้างโปรเจกต์ (Project Structure)
 
 ```
 serverless-project-practice/
-├── app/
-│   ├── frontend/                 # โค้ดหน้าเว็บ (Next.js)
-│   │   ├── Dockerfile            # สำหรับสร้าง Frontend Image
+│
+├── 📂 app/                         # โค้ดหลักของแอปพลิเคชัน
+│   ├── frontend/                   # Next.js Frontend
+│   │   ├── Dockerfile              # Build Frontend Image
+│   │   ├── .dockerignore
+│   │   ├── next.config.js
 │   │   ├── package.json
-│   │   └── ...
+│   │   ├── pages.tsx               # หน้า Todo List
+│   │   ├── public/
+│   │   └── styles/
 │   │
-│   └── backend/                  # โค้ดเซิร์ฟเวอร์ (Node.js)
-│       ├── Dockerfile            # สำหรับสร้าง Backend Image
+│   └── backend/                    # Node.js + Express Backend
+│       ├── Dockerfile              # Build Backend Image
+│       ├── .dockerignore
 │       ├── package.json
-│       ├── index.js
-│       └── ...
+│       ├── server.js                # Server Entry Point
+│       ├── .env           # Template ของ Environment Variables
 │
-├── k8s/                          # ไฟล์ตั้งค่า Kubernetes
-│   ├── db.yaml                   # PostgreSQL Deployment
-│   ├── deployment.yaml           # Frontend & Backend Deployment
-│   └── service.yaml              # Expose Services
+├── 📂 k8s/                         # Kubernetes Configuration Files
+│   ├── db.yaml                     # PostgreSQL Deployment + Service
+│   ├── deployment.yaml             # Frontend & Backend Deployment
+│   ├── service.yaml                # NodePort Services
 │
-├── docker-compose.yml            # รัน Frontend/Backend/Database ในเครื่อง
-├── docker-compose.jenkins.yml    # รัน Jenkins Server
-├── Dockerfile.jenkins            # Jenkins Custom Image
-├── Jenkinsfile                   # CI/CD Pipeline Configuration
-└── README.md                     # เอกสารคำอธิบาย
+├── 📂 ansible/                     # Ansible Playbooks (Infrastructure Setup)
+│   └── playbook.yml                # Installation Playbook
+│
+├── 📂 terraform/                   # Terraform Configuration (Infrastructure as Code)
+│   ├── main.tf                     # Main Terraform Config
+│   ├── variables.tf                # Variable Definitions
+│   └── outputs.tf                  # Output Values
+│
+├── 📂 monitoring/                  # Monitoring & Observability
+│   ├── prometheus-rules.yaml       # Prometheus Alert Rules
+│   ├── monitoring.json             # Grafana Dashboard Config
+│   └── values.yaml                 # Helm Values for Prometheus Stack
+│
+├── 📂 node_modules/                # Dependencies (Auto-generated)
+│
+├── 🐳 docker-compose.yml           # Local Development (All Services)
+├── 🐳 docker-compose.jenkins.yml   # Jenkins Server Only
+├── 🐳 Dockerfile.jenkins           # Custom Jenkins Image with Docker
+│
+├── 🔧 Jenkinsfile                  # CI/CD Pipeline Configuration
+├── 📄 .gitignore                   # Git Ignore Rules
+├── 📄 .dockerignore                # Docker Ignore Rules
+│
+├── 📖 H2R.md                       # How to Run (วิธีการรันระบบ)
+├── 📖 H2D.md                       # How to Shutdown (วิธีการปิดระบบ)
+└── 📖 TOTALPROCESS.md              # Complete Project Guide (ไฟล์นี้)
 ```
+
+---
+
+## 🎯 ไฟล์ที่สำคัญต้องสร้าง (Required Files)
+
+### Backend (`app/backend/`)
+- ✅ `package.json` - Dependencies list
+- ✅ `index.js` - Main server file
+- ✅ `.env.example` - Environment template
+- ✅ `.env` - Local environment (ไม่ Push ⚠️)
+- ✅ `Dockerfile` - Build image
+- ✅ `.dockerignore` - Docker ignore rules
+- ✅ `routes/todos.js` - API endpoints
+
+### Frontend (`app/frontend/`)
+- ✅ `package.json` - Dependencies list
+- ✅ `pages/index.jsx` - Main page
+- ✅ `.env.local` - Local environment (ไม่ Push ⚠️)
+- ✅ `Dockerfile` - Build image
+- ✅ `.dockerignore` - Docker ignore rules
+
+### Docker & CI/CD (Root)
+- ✅ `docker-compose.yml` - Local dev environment
+- ✅ `docker-compose.jenkins.yml` - Jenkins only
+- ✅ `Dockerfile.jenkins` - Custom Jenkins image
+- ✅ `Jenkinsfile` - Pipeline steps
+- ✅ `.gitignore` - Git ignore rules
+
+### Kubernetes (`k8s/`)
+- ✅ `db.yaml` - Database deployment
+- ✅ `deployment.yaml` - App deployment
+- ✅ `service.yaml` - Services exposure
+- ✅ `servicemonitor.yaml` - Prometheus config
+
+### Infrastructure as Code
+- ✅ `terraform/main.tf` - Infrastructure definition
+- ✅ `terraform/variables.tf` - Variables
+- ✅ `terraform/outputs.tf` - Outputs
+- ✅ `ansible/inventory` - Server list
+- ✅ `ansible/playbook.yml` - Installation steps
+
+### Monitoring (`monitoring/`)
+- ✅ `values.yaml` - Helm values
+- ✅ `prometheus-rules.yaml` - Alert rules
+- ✅ `grafana-dashboard.json` - Dashboard config
 
 ---
 
 # 🔧 Phase 1: Local Development & Setup
 
-**เป้าหมาย:** ทำให้แอปพลิเคชันทำงานบนเครื่องของนักพัฒนา และจัดการ Source Code ด้วย Git
+**เป้าหมาย:** ทำให้แอปพลิเคชันทำงานบนเครื่องของนักพัฒนา
 
-## 📍 Step 1: ตั้งค่า Backend (Node.js + Express)
+## 📍 Step 1: ตั้งค่า Backend
 
-### 1.1 เตรียมโฟลเดอร์
+### 1.1 สร้างโฟลเดอร์ & package.json
 
 ```bash
 cd app/backend
-```
-
-### 1.2 สร้างไฟล์ `package.json`
-
-```bash
 npm init -y
 ```
 
-คำสั่งนี้จะสร้างไฟล์ `package.json` ซึ่งเป็นไฟล์ที่เก็บข้อมูลโปรเจกต์ เช่น ชื่อ, เวอร์ชัน, และ dependencies
-
-### 1.3 ติดตั้ง Dependencies หลัก
+### 1.2 ติดตั้ง Dependencies
 
 ```bash
 npm install express cors pg dotenv
-```
-
-**แต่ละ Library:**
-- `express` - Framework สำหรับสร้าง API Server
-- `cors` - อนุญาตให้ Frontend เรียก API จาก Server อื่น
-- `pg` - Database Driver สำหรับเชื่อมต่อ PostgreSQL
-- `dotenv` - อ่านค่า Environment Variables จากไฟล์ `.env`
-
-### 1.4 ติดตั้ง Dev Dependencies
-
-```bash
 npm install --save-dev nodemon
 ```
 
-`nodemon` จะ Auto-reload Server เมื่อมีการแก้ไขไฟล์ (เหมือน Hot Reload)
+### 1.3 สร้างไฟล์ `app/backend/.env.example`
 
-### 1.5 สร้างไฟล์ Backend
+```env
+# Database Configuration
+DATABASE_URL=postgresql://USERNAME:PASSWORD@HOST:PORT/DATABASE_NAME
+PORT=8000
+NODE_ENV=development
+```
 
-สร้างไฟล์ `index.js`:
+⚠️ **สำคัญ:** ไฟล์นี้ไม่มี Secret Credentials ตัวจริง ใช้เป็นแบบอย่างเท่านั้น
+
+### 1.4 สร้างไฟล์ `app/backend/.env` (ไม่ Push ⚠️)
+
+```bash
+cp .env.example .env
+```
+
+แล้วแก้ไข `.env` ด้วยค่าจริง (เฉพาะในเครื่องของคุณ):
+
+```env
+DATABASE_URL=postgresql://postgres:your_secure_password@db:5432/tododb
+PORT=8000
+NODE_ENV=development
+```
+
+⚠️ **เพิ่มลงใน `.gitignore` ให้แน่นอน:**
+
+```bash
+echo ".env" >> ../../.gitignore
+```
+
+### 1.5 สร้างไฟล์ `app/backend/index.js`
 
 ```javascript
 const express = require('express');
@@ -100,63 +182,78 @@ const pool = new Pool({
 app.use(cors());
 app.use(express.json());
 
-// API Endpoints ของ Todo App
 app.get('/todos', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM todos');
+    const result = await pool.query('SELECT * FROM todos ORDER BY id DESC');
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(8000, () => {
-  console.log('Server running on port 8000');
+app.post('/todos', async (req, res) => {
+  try {
+    const { title } = req.body;
+    const result = await pool.query(
+      'INSERT INTO todos (title) VALUES ($1) RETURNING *',
+      [title]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.listen(process.env.PORT || 8000, () => {
+  console.log('Backend running on port ' + (process.env.PORT || 8000));
 });
 ```
 
-### 1.6 สร้างไฟล์ `.env` (ไม่ต้อง Push ขึ้น Git)
+### 1.6 สร้างไฟล์ `app/backend/Dockerfile`
 
-สร้างไฟล์ `.env` ในโฟลเดอร์ `app/backend`:
-
-```env
-DATABASE_URL=postgresql://postgres:password@db:5432/tododb
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 8000
+CMD ["node", "index.js"]
 ```
 
-⚠️ **เพิ่ม `.env` ลงในไฟล์ `.gitignore`:**
+### 1.7 สร้างไฟล์ `app/backend/.dockerignore`
 
 ```
-# ที่โฟลเดอร์หลังสุด
-echo ".env" >> .gitignore
+node_modules
+npm-debug.log
+.env
+.git
 ```
 
 ---
 
-## 📍 Step 2: ตั้งค่า Frontend (Next.js)
+## 📍 Step 2: ตั้งค่า Frontend
 
 ### 2.1 สร้างโปรเจกต์ Next.js
 
 ```bash
 cd app/frontend
-npx create-next-app@latest . --typescript --tailwind
-```
-
-### 2.2 ติดตั้ง Axios สำหรับเรียก API
-
-```bash
+npx create-next-app@latest . --typescript=false --tailwind=yes --eslint=yes
 npm install axios
 ```
 
-### 2.3 สร้าง Component
-
-สร้างไฟล์ `pages/index.jsx` สำหรับแสดง Todo List:
+### 2.2 สร้างไฟล์ `app/frontend/pages/index.jsx`
 
 ```javascript
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 export default function Home() {
   const [todos, setTodos] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchTodos();
@@ -164,68 +261,159 @@ export default function Home() {
 
   const fetchTodos = async () => {
     try {
-      const response = await axios.get(process.env.NEXT_PUBLIC_API_URL + '/todos');
+      const response = await axios.get(API_URL + '/todos');
       setTodos(response.data);
     } catch (err) {
       console.error('Error fetching todos:', err);
     }
   };
 
+  const addTodo = async () => {
+    if (!input.trim()) return;
+    setLoading(true);
+    try {
+      await axios.post(API_URL + '/todos', { title: input });
+      setInput('');
+      fetchTodos();
+    } catch (err) {
+      console.error('Error adding todo:', err);
+    }
+    setLoading(false);
+  };
+
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold">My To-Do List</h1>
-      <ul className="mt-4">
-        {todos.map((todo) => (
-          <li key={todo.id} className="p-2 border-b">
-            {todo.title}
-          </li>
-        ))}
-      </ul>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">📝 My To-Do List</h1>
+        
+        <div className="flex gap-2 mb-6">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && addTodo()}
+            placeholder="Add a new todo..."
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={addTodo}
+            disabled={loading}
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+          >
+            Add
+          </button>
+        </div>
+
+        <ul className="space-y-2">
+          {todos.length === 0 ? (
+            <li className="text-gray-500 text-center py-8">No todos yet. Create one!</li>
+          ) : (
+            todos.map((todo) => (
+              <li key={todo.id} className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                {todo.title}
+              </li>
+            ))
+          )}
+        </ul>
+      </div>
     </div>
   );
 }
 ```
 
-สร้างไฟล์ `.env.local`:
+### 2.3 สร้างไฟล์ `app/frontend/.env.local` (ไม่ Push ⚠️)
 
 ```env
+# API Configuration
 NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+⚠️ **สำคัญ:** ไฟล์นี้ต้องเพิ่มลงใน `.gitignore`:
+
+```bash
+echo ".env.local" >> ../../.gitignore
+```
+
+### 2.4 สร้างไฟล์ `app/frontend/Dockerfile`
+
+```dockerfile
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+RUN npm run build
+
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+### 2.5 สร้างไฟล์ `app/frontend/.dockerignore`
+
+```
+node_modules
+npm-debug.log
+.next
+.git
+.env.local
 ```
 
 ---
 
-## 📍 Step 3: ตั้งค่า Database (PostgreSQL)
+## 📍 Step 3: ตั้งค่า Docker Compose
 
 ### 3.1 สร้างไฟล์ `docker-compose.yml`
-
-สร้างไฟล์นี้ในโฟลเดอร์หลักของโปรเจกต์:
 
 ```yaml
 version: '3.8'
 
 services:
   db:
-    image: postgres:15
+    image: postgres:15-alpine
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: secure_password_change_me  # ⚠️ เปลี่ยนรหัสผ่าน
       POSTGRES_DB: tododb
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build: ./app/backend
     environment:
-      DATABASE_URL: postgresql://postgres:password@db:5432/tododb
+      DATABASE_URL: postgresql://postgres:secure_password_change_me@db:5432/tododb  # ⚠️ ต้องตรงกัน
+      NODE_ENV: development
+      PORT: 8000
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app/backend:/app
+      - /app/node_modules
 
   frontend:
-    build: ./app/frontend
+    build:
+      context: ./app/frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
     ports:
       - "3000:3000"
     depends_on:
@@ -235,97 +423,82 @@ volumes:
   postgres_data:
 ```
 
-### 3.2 รันทั้งระบบ
+### 3.2 รันระบบ
 
 ```bash
 docker compose up -d --build
 ```
 
-**ตรวจสอบ:**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000/todos
-- Database: `docker compose exec db psql -U postgres -d tododb`
-
----
-
-## 📍 Step 4: ทดสอบ Database
-
-### เข้า Database CLI
+### 3.3 เตรียม Database
 
 ```bash
 docker compose exec db psql -U postgres -d tododb
-```
 
-จะเห็น prompt `tododb=#`
-
-### สร้าง Table Todos
-
-```sql
+# ใน psql prompt
 CREATE TABLE todos (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   completed BOOLEAN DEFAULT false,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-```
 
-### ใส่ข้อมูลทดสอบ
-
-```sql
-INSERT INTO todos (title, completed) VALUES ('Learn Docker', false);
-INSERT INTO todos (title, completed) VALUES ('Setup Kubernetes', false);
-```
-
-### ยืนยันว่าข้อมูลอยู่
-
-```sql
-SELECT * FROM todos;
-```
-
-### ออกจาก Database
-
-```sql
 \q
 ```
 
 ---
 
-## 📍 Step 5: จัดการ Git Repository
+## 📍 Step 4: ตั้งค่า Git
 
-### 5.1 สร้าง `.gitignore`
-
-สร้างไฟล์ `.gitignore` ในโฟลเดอร์หลัก:
+### 4.1 สร้างไฟล์ `.gitignore`
 
 ```
-# Environment
+# Environment Variables (ไม่ Push Secret ⚠️)
 .env
 .env.local
 .env.*.local
+app/**/.env
+app/**/.env.local
 
 # Dependencies
 node_modules/
 package-lock.json
+yarn.lock
 
 # Build outputs
 .next/
 dist/
 build/
+out/
 
 # Docker
 .docker
+postgres_data/
 
 # IDE
 .vscode/
 .idea/
 *.swp
+*.swo
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate*
+
+# Jenkins
+jenkins_home/
 ```
 
-### 5.2 Initialize Git & Push
+### 4.2 Initialize Git
 
 ```bash
 git init
 git add .
-git commit -m "initial: setup todo app with docker"
+git commit -m "initial: setup todo app"
 git branch -M main
 git remote add origin https://github.com/YOUR_USERNAME/serverless-project-practice.git
 git push -u origin main
@@ -333,23 +506,23 @@ git push -u origin main
 
 ---
 
-# 🤖 Phase 2: Continuous Integration with Jenkins
+# 🤖 Phase 2: Jenkins CI/CD Pipeline
 
-**เป้าหมาย:** ทำให้ทุกครั้งที่ Push Code → Jenkins จะ Build Image และอัปเดตโดยอัตโนมัติ
+**เป้าหมาย:** ทำให้ Push Code → Build & Deploy อัตโนมัติ
 
-## 📍 Step 1: ติดตั้ง Jenkins
+## 📍 Step 1: ตั้งค่า Jenkins
 
-### 1.1 สร้าง `Dockerfile.jenkins` (Custom Jenkins Image)
+### 1.1 สร้างไฟล์ `Dockerfile.jenkins`
 
 ```dockerfile
 FROM jenkins/jenkins:lts
 USER root
-RUN apt-get update && apt-get install -y docker.io
+RUN apt-get update && apt-get install -y docker.io git
 RUN usermod -aG docker jenkins
 USER jenkins
 ```
 
-### 1.2 สร้าง `docker-compose.jenkins.yml`
+### 1.2 สร้างไฟล์ `docker-compose.jenkins.yml`
 
 ```yaml
 version: '3.8'
@@ -376,106 +549,77 @@ volumes:
 
 ```bash
 docker compose -f docker-compose.jenkins.yml up --build -d
+docker compose -f docker-compose.jenkins.yml logs jenkins | grep initialAdminPassword
 ```
 
-### 1.4 รับรหัสผ่านเริ่มต้น
-
-```bash
-docker compose -f docker-compose.jenkins.yml logs jenkins | grep "initialAdminPassword"
-```
-
-จะเห็นรหัสแบบนี้: `7a5c3e2f0d1b4a9c8e6f5g3h2i1j0k`
-
-### 1.5 ปลดล็อก Jenkins
-
-1. เปิด http://localhost:8080
-2. ใส่รหัสผ่านที่ได้มา
-3. เลือก **Install suggested plugins**
-4. ตั้งค่า Admin User
+เข้า http://localhost:8080 แล้วปลดล็อก
 
 ---
 
-## 📍 Step 2: ตั้งค่า Docker Hub Credentials
+## 📍 Step 2: ตั้งค่า Docker Hub Credentials ⚠️
 
-Jenkins จะต้องรู้จักบัญชี Docker Hub เพื่อ Push Image
+1. Jenkins → **Manage Jenkins** → **Credentials** → **Global credentials**
+2. **Add Credentials**
+3. Kind: **Username with password**
+4. กรอก:
+   - Username: Docker Hub username (สาธารณะ OK)
+   - Password: **Access Token** (ไม่ใช่ password จริง ⚠️)
+   - ID: `docker-hub-creds`
 
-### 2.1 สร้าง Access Token ที่ Docker Hub
-
+**วิธีสร้าง Access Token:**
 1. เข้า https://hub.docker.com/settings/security
 2. กด **New Access Token**
 3. ตั้งชื่อ: `jenkins-token`
-4. คัดลอก Token
-
-### 2.2 เพิ่ม Credentials ใน Jenkins
-
-1. ไปที่ **Manage Jenkins** → **Credentials**
-2. กด **Global credentials**
-3. กด **Add Credentials**
-4. เลือก **Kind: Username with password**
-5. กรอก:
-   - **Username**: Docker Hub Username
-   - **Password**: Token ที่สร้างได้
-   - **ID**: `docker-hub-creds` (สำคัญมาก!)
+4. ข้อมูลจะไม่เก็บหรือ commit ขึ้น Git
 
 ---
 
 ## 📍 Step 3: สร้าง Jenkinsfile
 
-สร้างไฟล์ `Jenkinsfile` ในโฟลเดอร์หลักของโปรเจกต์:
+### สร้างไฟล์ `Jenkinsfile`
 
 ```groovy
 pipeline {
   agent any
   
   environment {
-    DOCKER_REGISTRY = "docker.io"
-    DOCKER_USERNAME = "your-docker-username"
-    IMAGE_NAME_FRONTEND = "${DOCKER_USERNAME}/todo-frontend"
-    IMAGE_NAME_BACKEND = "${DOCKER_USERNAME}/todo-backend"
+    DOCKER_USERNAME = credentials('docker-hub-username')
+    DOCKER_PASSWORD = credentials('docker-hub-creds')
+    IMAGE_FRONTEND = "${DOCKER_USERNAME}/todo-frontend:latest"
+    IMAGE_BACKEND = "${DOCKER_USERNAME}/todo-backend:latest"
   }
 
   stages {
-    stage('Git Checkout') {
+    stage('📥 Git Checkout') {
       steps {
-        echo '📥 Pulling latest code from Git...'
+        echo '📥 Pulling code...'
         checkout scm
       }
     }
 
-    stage('Build Frontend Image') {
+    stage('🏗️ Build Images') {
       steps {
-        echo '🏗️ Building Frontend Docker Image...'
+        echo '🏗️ Building Docker images...'
         sh '''
-          docker build -t ${IMAGE_NAME_FRONTEND}:latest \
-            --build-arg NEXT_PUBLIC_API_URL=http://localhost:30081 \
-            ./app/frontend
+          docker build -t ${IMAGE_FRONTEND} --build-arg NEXT_PUBLIC_API_URL=http://localhost:30081 ./app/frontend
+          docker build -t ${IMAGE_BACKEND} ./app/backend
         '''
       }
     }
 
-    stage('Build Backend Image') {
+    stage('📤 Push Images') {
       steps {
-        echo '🏗️ Building Backend Docker Image...'
+        echo '📤 Pushing to Docker Hub...'
         sh '''
-          docker build -t ${IMAGE_NAME_BACKEND}:latest ./app/backend
+          echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+          docker push ${IMAGE_FRONTEND}
+          docker push ${IMAGE_BACKEND}
+          docker logout
         '''
       }
     }
 
-    stage('Push to Docker Hub') {
-      steps {
-        echo '📤 Pushing images to Docker Hub...'
-        withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          sh '''
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push ${IMAGE_NAME_FRONTEND}:latest
-            docker push ${IMAGE_NAME_BACKEND}:latest
-          '''
-        }
-      }
-    }
-
-    stage('Deploy to Kubernetes') {
+    stage('🚀 Deploy') {
       steps {
         echo '🚀 Deploying to Kubernetes...'
         sh '''
@@ -488,10 +632,10 @@ pipeline {
 
   post {
     success {
-      echo '✅ Pipeline completed successfully!'
+      echo '✅ Success!'
     }
     failure {
-      echo '❌ Pipeline failed!'
+      echo '❌ Failed!'
     }
   }
 }
@@ -499,76 +643,20 @@ pipeline {
 
 ---
 
-## 📍 Step 4: สร้าง Pipeline Job
-
-### 4.1 สร้าง New Job
-
-1. ไปที่ Jenkins Dashboard
-2. กด **New Item**
-3. ตั้งชื่อ: `todo-app-pipeline`
-4. เลือก **Pipeline**
-5. กด **OK**
-
-### 4.2 ตั้งค่า Pipeline
-
-**General:**
-- ✅ Check: **GitHub project**
-- ใส่ URL: `https://github.com/YOUR_USERNAME/serverless-project-practice`
-
-**Pipeline:**
-- Definition: **Pipeline script from SCM**
-- SCM: **Git**
-- Repository URL: `https://github.com/YOUR_USERNAME/serverless-project-practice.git`
-- Branch: `*/main` (หรือชื่อ Branch ของคุณ)
-- Script Path: `Jenkinsfile`
-
-### 4.3 กด **Save**
-
----
-
-## 📍 Step 5: ทดสอบ Pipeline
-
-### 5.1 Trigger Build Manually
-
-1. เข้า Job ที่สร้างไป
-2. กด **Build Now**
-3. รอให้ Jenkins ทำการ:
-   - ดึง Code จาก Git
-   - Build Docker Image
-   - Push ขึ้น Docker Hub
-   - Deploy ไป Kubernetes
-
-### 5.2 ตรวจสอบลอก
-
-กด **Build** ที่เสร็จเสร็จ → **Console Output** เพื่อดูรายละเอียด
-
----
-
 # ☸️ Phase 3: Kubernetes Deployment
 
-**เป้าหมาย:** กำหนดวิธีการรัน Frontend/Backend/Database บน Kubernetes Cluster
+## 📍 Step 1: สร้าง Kubernetes Files
 
-## 📍 Step 1: เตรียมไฟล์ Kubernetes Manifests
-
-### 1.1 สร้างไฟล์ `k8s/db.yaml` (PostgreSQL)
+### `k8s/db.yaml`
 
 ```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: db-config
-data:
-  POSTGRES_DB: "tododb"
-  POSTGRES_USER: "postgres"
-
----
 apiVersion: v1
 kind: Secret
 metadata:
   name: db-secret
 type: Opaque
 stringData:
-  POSTGRES_PASSWORD: "password"
+  POSTGRES_PASSWORD: postgresql_password_change_me  # ⚠️ เปลี่ยน
 
 ---
 apiVersion: apps/v1
@@ -587,14 +675,19 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: postgres:15
+        image: postgres:15-alpine
         ports:
         - containerPort: 5432
-        envFrom:
-        - configMapRef:
-            name: db-config
-        - secretRef:
-            name: db-secret
+        env:
+        - name: POSTGRES_DB
+          value: "tododb"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: POSTGRES_PASSWORD
         volumeMounts:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data
@@ -611,15 +704,23 @@ spec:
   selector:
     app: postgres-db
   ports:
-  - protocol: TCP
-    port: 5432
+  - port: 5432
     targetPort: 5432
   type: ClusterIP
 ```
 
-### 1.2 สร้างไฟล์ `k8s/deployment.yaml` (Frontend & Backend)
+### `k8s/deployment.yaml`
 
 ```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-connection
+type: Opaque
+stringData:
+  DATABASE_URL: postgresql://postgres:postgresql_password_change_me@postgres-service:5432/tododb  # ⚠️ ต้องตรงกัน
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -635,27 +736,28 @@ spec:
         app: todo-app
     spec:
       containers:
-      # Backend Container
       - name: backend
-        image: your-docker-username/todo-backend:latest
+        image: your-username/todo-backend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
           name: api
         env:
         - name: DATABASE_URL
-          value: "postgresql://postgres:password@postgres-service:5432/tododb"
+          valueFrom:
+            secretKeyRef:
+              name: db-connection
+              key: DATABASE_URL
 
-      # Frontend Container
       - name: frontend
-        image: your-docker-username/todo-frontend:latest
+        image: your-username/todo-frontend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
           name: web
 ```
 
-### 1.3 สร้างไฟล์ `k8s/service.yaml` (Expose Services)
+### `k8s/service.yaml`
 
 ```yaml
 apiVersion: v1
@@ -668,160 +770,76 @@ spec:
     app: todo-app
   ports:
   - name: web
-    protocol: TCP
     port: 80
     targetPort: 3000
-    nodePort: 30080  # Frontend: http://localhost:30080
+    nodePort: 30080
   - name: api
-    protocol: TCP
     port: 8000
     targetPort: 8000
-    nodePort: 30081  # Backend: http://localhost:30081
+    nodePort: 30081
 ```
 
----
-
-## 📍 Step 2: ตรวจสอบ Kubernetes Config
+## 📍 Step 2: Deploy
 
 ```bash
-# ตรวจสอบ Syntax
-kubectl apply -f k8s/ --dry-run=client
-
-# นำไปใช้งานจริง
 kubectl apply -f k8s/
-```
-
----
-
-## 📍 Step 3: ตรวจสอบการ Deploy
-
-```bash
-# ดู Pods ทั้งหมด
 kubectl get pods
-
-# ดู Services
-kubectl get svc
-
-# ดู Logs ของ Pod
-kubectl logs <pod-name>
-
-# ทดสอบแอป
-# Frontend: http://localhost:30080
-# Backend: http://localhost:30081/todos
 ```
 
 ---
 
-# 📊 Phase 4: Monitoring with Prometheus & Grafana
+# 📊 Phase 4: Monitoring
 
-**เป้าหมาย:** สร้างระบบตรวจสอบ CPU, RAM, และ Custom Metrics ของแอป
-
-## 📍 Step 1: ติดตั้ง Prometheus Stack
-
-### 1.1 เพิ่ม Helm Repository
+### Step 1: ติดตั้ง Prometheus
 
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
+helm install monitoring prometheus-community/kube-prometheus-stack -f monitoring/values.yaml
 ```
 
-### 1.2 ติดตั้ง kube-prometheus-stack
-
-```bash
-helm install monitoring prometheus-community/kube-prometheus-stack
-```
-
-### 1.3 ตรวจสอบ Pods
-
-```bash
-kubectl get pods -n default
-
-# รอจนทุก Pod เป็น Running (ประมาณ 2-5 นาที)
-```
-
----
-
-## 📍 Step 2: เพิ่ม Metrics Exporter ในแอป
-
-### 2.1 ติดตั้ง prom-client
+### Step 2: เพิ่ม Metrics ใน Backend
 
 ```bash
 cd app/backend
 npm install prom-client
 ```
 
-### 2.2 แก้ไขไฟล์ `index.js`
-
-เพิ่มโค้ดนี้ที่ด้านบน:
+### Step 3: Update `app/backend/index.js`
 
 ```javascript
 const client = require('prom-client');
 
-// Default Metrics (CPU, Memory, etc)
 client.collectDefaultMetrics({ register: client.register });
 
-// Custom Counters
-const todoCreatedCounter = new client.Counter({
+const todoCounter = new client.Counter({
   name: 'todo_created_total',
-  help: 'Total number of todos created'
+  help: 'Total todos created'
 });
 
-const todoToggledCounter = new client.Counter({
-  name: 'todo_toggled_total',
-  help: 'Total number of todos toggled'
-});
-
-const todoDeletedCounter = new client.Counter({
-  name: 'todo_deleted_total',
-  help: 'Total number of todos deleted'
-});
-
-// Metrics Endpoint
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', client.register.contentType);
   res.end(await client.register.metrics());
 });
 
-// เมื่อสร้าง Todo
 app.post('/todos', async (req, res) => {
-  // ... logic ...
-  todoCreatedCounter.inc();
-  // ... ส่ง response ...
-});
-
-// เมื่อแก้ไข Todo
-app.put('/todos/:id', async (req, res) => {
-  // ... logic ...
-  todoToggledCounter.inc();
-  // ... ส่ง response ...
-});
-
-// เมื่อลบ Todo
-app.delete('/todos/:id', async (req, res) => {
-  // ... logic ...
-  todoDeletedCounter.inc();
-  // ... ส่ง response ...
+  try {
+    const { title } = req.body;
+    const result = await pool.query(
+      'INSERT INTO todos (title) VALUES ($1) RETURNING *',
+      [title]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+  todoCounter.inc();
 });
 ```
 
-### 2.3 Build & Push Image ใหม่
+### Step 4: ServiceMonitor
 
-```bash
-docker build -t your-docker-username/todo-backend:latest ./app/backend
-docker push your-docker-username/todo-backend:latest
-```
-
-### 2.4 Restart Deployment
-
-```bash
-kubectl rollout restart deployment todo-app
-```
-
----
-
-## 📍 Step 3: สร้าง ServiceMonitor
-
-สร้างไฟล์ `k8s/servicemonitor.yaml`:
+สร้างไฟล์ `k8s/servicemonitor.yaml`
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -840,178 +858,41 @@ spec:
     interval: 30s
 ```
 
-### ใช้งาน
-
 ```bash
 kubectl apply -f k8s/servicemonitor.yaml
 ```
 
-### ตรวจสอบ
+### Step 5: Port-Forward
 
-```bash
-kubectl get servicemonitor
-```
-
----
-
-## 📍 Step 4: เปิดทูนเนล Port-Forward
-
-**Terminal 1 - Prometheus:**
-```bash
-kubectl port-forward svc/monitoring-kube-prometheus 9090:9090
-```
-เข้า: http://localhost:9090
-
-**Terminal 2 - Grafana:**
 ```bash
 kubectl port-forward svc/monitoring-grafana 3000:80
-```
-เข้า: http://localhost:3000 (User: `admin`, Pass: `prom-operator`)
-
-**Terminal 3 - Backend API:**
-```bash
-kubectl port-forward svc/todo-service 8001:8000
-```
-เข้า: http://localhost:8001/metrics
-
----
-
-## 📍 Step 5: สร้าง Grafana Dashboard
-
-### 5.1 Login Grafana
-
-- URL: http://localhost:3000
-- User: `admin`
-- Password: `prom-operator`
-
-### 5.2 เพิ่ม Data Source
-
-1. ไปที่ **Configuration** → **Data Sources**
-2. กด **Add data source**
-3. เลือก **Prometheus**
-4. URL: `http://monitoring-kube-prometheus:9090`
-5. กด **Save & Test**
-
-### 5.3 สร้าง Dashboard
-
-1. กด **+** → **Dashboard**
-2. เลือก **Add Panel**
-3. กรอก PromQL Query:
-
-**Panel 1 - Total Todos Created:**
-```promql
-sum(todo_created_total)
-```
-
-**Panel 2 - Total Todos Toggled:**
-```promql
-sum(todo_toggled_total)
-```
-
-**Panel 3 - Total Todos Deleted:**
-```promql
-sum(todo_deleted_total)
-```
-
-**Panel 4 - Pod CPU Usage:**
-```promql
-sum(rate(container_cpu_usage_seconds_total{pod=~"todo-app.*"}[5m]))
-```
-
-**Panel 5 - Pod Memory Usage:**
-```promql
-sum(container_memory_usage_bytes{pod=~"todo-app.*"})
+# User: admin | Pass: prom-operator (default)
 ```
 
 ---
 
-## 📍 Step 6: ทดสอบแสดงผล
-
-### ทำให้ Metrics เพิ่มขึ้น
-
-1. เปิด Frontend: http://localhost:30080
-2. กดเพิ่ม/ลบ/แก้ Task เร็วๆ 10-20 ครั้ง
-3. รอ 30 วินาที
-
-### ดูผลลัพธ์
-
-1. กลับไป Grafana ดูกราฟ
-2. ควรเห็นตัวเลขเพิ่มขึ้นแบบ Real-time ✅
-
----
-
-# 🧹 Phase 5: Shutdown & Cleanup
-
-**เป้าหมาย:** ปิดระบบอย่างถูกวิธี คืน Resources
-
-## ปิดระบบตามลำดับ
+# 🧹 Phase 5: Shutdown
 
 ```bash
-# 1. ลบ Kubernetes Resources
 kubectl delete -f k8s/
-
-# 2. Uninstall Monitoring
 helm uninstall monitoring
-
-# 3. ปิด Jenkins
 docker compose -f docker-compose.jenkins.yml down
-
-# 4. ปิด Development Compose
 docker compose down
-
-# 5. ปิด Docker Desktop
-# Windows: คลิกขวา Docker Icon → Quit
-# Mac: Click Docker Icon → Quit Docker Desktop
 ```
 
 ---
 
-## 📋 สรุปการใช้งาน
+## 🔐 Security Best Practices
 
-### การพัฒนาโค้ด (Developer Workflow)
-
-```bash
-# 1. แก้ไขโค้ด
-# 2. ส่งขึ้น Git
-git add .
-git commit -m "feat: add new todo feature"
-git push origin main
-
-# 3. Jenkins ทำงานอัตโนมัติ
-# - Build Image
-# - Push to Docker Hub
-# - Deploy ไป Kubernetes
-
-# 4. ตรวจสอบผลลัพธ์
-# Frontend: http://localhost:30080
-# Grafana: http://localhost:3000
-```
-
-### คำสั่ง Useful
-
-```bash
-# ดูสถานะระบบ
-kubectl get pods
-kubectl get svc
-kubectl get nodes
-
-# ดู Logs
-kubectl logs <pod-name>
-kubectl logs <pod-name> -f  # Follow
-
-# บังคับ Restart
-kubectl rollout restart deployment todo-app
-
-# Delete Pod (K8s จะสร้างใหม่)
-kubectl delete pod <pod-name>
-
-# ดู Resource Usage
-kubectl top nodes
-kubectl top pods
-```
+1. **ไม่เคยใช้ Passwords จริงใน Code** - ใช้ Environment Variables เสมอ
+2. **ไฟล์ `.env` & `.env.local` ต้องอยู่ใน `.gitignore`** - ป้องกัน Credentials ขึ้น Git
+3. **ใช้ Kubernetes Secrets** - สำหรับจัดเก็บ Database passwords
+4. **Access Tokens แทน Passwords** - Docker Hub ใช้ Personal Access Token
+5. **rotate Secrets regularly** - เปลี่ยน Passwords ทุก 3-6 เดือน
+6. **ไม่ Commit `.env` files** - ตรวจสอบด้วย `git status` ก่อน commit
 
 ---
 
-✅ **เสร็จสิ้น!** โปรเจกต์นี้ได้ครอบคลุมทั้งการพัฒนา Deployment Monitoring ครบถ้วน
+✅ **สมบูรณ์!** โปรเจกต์พร้อมใช้งานอย่างปลอดภัย
 
 
