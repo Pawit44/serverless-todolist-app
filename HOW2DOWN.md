@@ -47,10 +47,6 @@ helm uninstall prometheus
 # ลบแอปและ ServiceMonitor
 kubectl delete -f deployment.yaml,service.yaml,servicemonitor.yaml
 
-# ลบข้อมูลที่ค้างอยู่ใน Database (PVC)
-kubectl delete pvc --all
-```
-
 ## 6. ลบ Jenkins (Container)
 
 จากภาพ `docker ps` ของคุณ Jenkins รันอยู่ในชื่อ `serverless-project-practice-jenkins-1` ให้ใช้คำสั่ง Docker เพื่อหยุดและลบ:
