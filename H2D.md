@@ -21,7 +21,7 @@ helm uninstall prometheus
 
 **ลบแอปพลิเคชัน:**
 ```bash
-kubectl delete -f deployment.yaml,service.yaml,servicemonitor.yaml
+kubectl delete -f servicemonitor.yaml
 ```
 
 หรือ ลบทั้งหมด:
