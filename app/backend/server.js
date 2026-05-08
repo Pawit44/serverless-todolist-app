@@ -71,6 +71,7 @@ pool.connect()
 // ==========================================
 // [ Phase 5 ] Endpoint สำหรับให้ Prometheus มาดูดข้อมูล
 // ==========================================
+
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', client.register.contentType);
   res.end(await client.register.metrics());
@@ -89,7 +90,7 @@ app.get('/todos', async (req, res) => {
 });
 
 app.post('/todos', async (req, res) => {
-  const { task, prio, time } = req.query; // หมายเหตุ: จริงๆ ตรงนี้ใช้ req.body จะตรงมาตรฐานกว่านะครับ แต่ผมคงเดิมไว้ให้ก่อน
+  const { task, prio, time } = req.query; // หมายเหตุ: จริงๆ ตรงนี้ใช้ req.body จะตรงมาตรฐานกว่านะ แต่ผมคงเดิมไว้ให้ก่อน
   if (!task) return res.status(400).json({ error: 'Task is required' });
 
   try {
