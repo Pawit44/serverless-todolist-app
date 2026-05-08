@@ -1,7 +1,6 @@
-# 🚀 [ชื่อโปรเจค] — ENG23 3074
+# 🚀 Serverless To-Do List App — ENG23 3074
 
-> _อธิบายโปรเจคสั้น ๆ ในประโยคเดียว_  
-> **ตัวอย่าง:** ระบบ API บันทึกโน้ต สร้างด้วย Python Flask containerize ด้วย Docker และ deploy บน Kubernetes ผ่าน Jenkins pipeline แบบอัตโนมัติ
+> ระบบ To-Do List แบบ Web Application สร้างด้วย Next.js, Node.js/Express และ PostgreSQL พร้อม Docker, Jenkins CI/CD, Kubernetes Deployment และ Monitoring ด้วย Prometheus/Grafana
 
 ---
 
@@ -9,26 +8,26 @@
 
 | รหัสนักศึกษา | ชื่อ-นามสกุล | ความรับผิดชอบ |
 |-------------|-------------|---------------|
-| 6XXXXXXX | ชื่อ นามสกุล | Git, App Development |
-| 6XXXXXXX | ชื่อ นามสกุล | Jenkins, Docker |
-| 6XXXXXXX | ชื่อ นามสกุล | Terraform, Ansible |
-| 6XXXXXXX | ชื่อ นามสกุล | Kubernetes, Monitoring |
+| B6606138 | นายธนพล สงกล้า | App Development |
+| B6609535 | นางสาวมุธิตา สิงห์แก้ว | Terraform, Ansible |
+| B6617646 | นายภาวิฒ ฉ่ำเสนาะ | Jenkins, Docker , Git |
+| B6630409 | นายอิสรภาพ วาตุรัมย์ | Kubernetes, Monitoring |
 
 ---
 
 ## 📌 ภาพรวมโปรเจค
 
 ### แอปพลิเคชัน
-- **ชื่อ:** [ชื่อแอป]
-- **ประเภท:** Web App
-- **ภาษา / Framework:** Backend: Node.js Express , Frontend: Next.Js Database: Postgres
-- **คำอธิบาย:** [อธิบาย 2–3 ประโยคว่าแอปทำอะไร ใช้แก้ปัญหาอะไร]
+- **ชื่อ:** Serverless To-Do List App
+- **ประเภท:** Web Application + REST API
+- **ภาษา / Framework:** Next.js, React, TypeScript, Node.js, Express, PostgreSQL
+- **คำอธิบาย:** โปรเจคนี้เป็นระบบจัดการรายการงานที่สามารถเพิ่มงาน เลือกระดับความสำคัญ ทำเครื่องหมายว่าเสร็จแล้ว ลบงาน และดูจำนวนงานทั้งหมดผ่านหน้าเว็บได้ ข้อมูลถูกเก็บใน PostgreSQL และ Backend มี endpoint `/metrics` สำหรับให้ Prometheus ดึงข้อมูลไปแสดงผลบน Grafana
 
 ### Architecture Diagram
-```
+```text
 Developer
     │
-    ▼  git push
+    ▼  git push / Build Now
  GitHub ──── webhook ────▶ Jenkins CI/CD
                                 │
                     ┌───────────┼───────────┐
@@ -37,20 +36,26 @@ Developer
                                             │
                                             ▼
                                        Docker Hub
+                         pawit44/todo-frontend:latest
+                         pawit44/todo-backend:latest
                                             │
                                     ┌───────┴───────┐
                                     ▼               ▼
                                 Terraform        Ansible
+                          (create inventory)   (prepare env)
                                     │               │
                                     └───────┬───────┘
                                             ▼
                                    Kubernetes Cluster
-                                   ┌────────────────┐
-                                   │  Pod 1  Pod 2  │
-                                   │  [App]  [App]  │
-                                   │                │
-                                   │  Service (NodePort :XXXXX)  │
-                                   └────────────────┘
+                    ┌──────────────────────────────────────────────┐
+                    │  Pod 1          Pod 2          DB Pod        │
+                    │  [Frontend]     [Frontend]     [Postgres]    │
+                    │  [Backend]      [Backend]                    │
+                    │                                              │
+                    │  Service: todo-service                       │
+                    │  NodePort :30080 web / :30081 api            │
+                    │  Service: db-service :5432                   │
+                    └──────────────────────────────────────────────┘
                                             │
                               ┌─────────────┴──────────────┐
                               ▼                             ▼
@@ -62,46 +67,66 @@ Developer
 
 ## 📁 โครงสร้าง Repository
 
-```
-[project-name]/
+```text
+serverless-todolist-app/
 ├── app/
-│   ├── app.py                  # โค้ดหลักของแอปพลิเคชัน
-│   ├── requirements.txt        # Python dependencies
-│   └── Dockerfile              # คำสั่งสร้าง Docker image
-├── Jenkinsfile                 # กำหนด CI/CD pipeline ทุก stage
-├── terraform/
-│   ├── main.tf                 # กำหนด resource ที่จะ provision
-│   ├── variables.tf            # ตัวแปร input
-│   └── outputs.tf              # ค่า output หลัง apply
-├── ansible/
-│   ├── inventory               # รายชื่อ host เป้าหมาย
-│   └── playbook.yml            # tasks สำหรับ configure environment
+│   ├── frontend/
+│   │   ├── app/
+│   │   │   ├── page.tsx            # หน้าเว็บ To-Do List หลัก
+│   │   │   ├── layout.tsx          # Root layout ของ Next.js
+│   │   │   └── globals.css         # Global CSS และ Tailwind import
+│   │   ├── public/                 # Static assets จาก Next.js template
+│   │   ├── Dockerfile              # สร้าง image สำหรับ frontend
+│   │   ├── package.json            # scripts และ dependencies frontend
+│   │   └── .env.production         # NEXT_PUBLIC_API_URL
+│   └── backend/
+│       ├── server.js               # Express API, PostgreSQL connection, metrics
+│       ├── Dockerfile              # สร้าง image สำหรับ backend
+│       ├── package.json            # scripts และ dependencies backend
+│       └── doc.txt                 # note ขั้นตอนการ setup backend
 ├── k8s/
-│   ├── deployment.yaml         # กำหนด Pods และ replicas
-│   └── service.yaml            # เปิดพอร์ตให้เข้าถึงแอปจากภายนอก
-├── monitoring/
-│   ├── prometheus.yml          # ตั้งค่า scrape target
-│   └── grafana-dashboard.json  # Dashboard ที่ export จาก Grafana
-└── README.md
+│   ├── deployment.yaml             # Deployment frontend/backend
+│   ├── service.yaml                # NodePort frontend/backend
+│   ├── db.yaml                     # PostgreSQL Deployment + Service
+│   └── servicemonitor.yaml         # ให้ Prometheus scrape /metrics
+├── terraform/
+│   ├── main.tf                     # สร้าง Ansible inventory แบบ local
+│   ├── variables.tf                # ตัวแปร environment
+│   └── outputs.tf                  # output path ของ inventory
+├── ansible/
+│   └── playbook.yml                # เตรียม environment สำหรับ deployment
+├── docker-compose.yml              # รัน frontend/backend/db แบบ local
+├── docker-compose.jenkins.yml      # รัน Jenkins server
+├── Dockerfile.jenkins              # Jenkins image ที่มี Docker, Terraform, Ansible, kubectl
+├── Jenkinsfile                     # CI/CD pipeline
+├── HOW2RUN.md                      # คู่มือรันระบบ
+├── HOW2DOWN.md                     # คู่มือปิดระบบ
+├── INFA_DEVOPS.md                  # เอกสารสรุป phase ของ DevOps
+├── README.md
+└── READMETEST.md
 ```
 
 ---
 
 ## ⚙️ สิ่งที่ต้องติดตั้งก่อน (Prerequisites)
 
-ตรวจสอบให้แน่ใจว่าติดตั้งทุก tool ครบก่อนรันโปรเจค
+ตรวจสอบให้แน่ใจว่าติดตั้งเครื่องมือที่จำเป็นครบก่อนเริ่มใช้งาน
 
-| Tool | Version | หน้าที่ |
-|------|---------|---------|
+| Tool | Version แนะนำ | หน้าที่ |
+|------|---------------|---------|
 | Git | ≥ 2.x | จัดการ source code |
-| Docker | ≥ 24.x | สร้างและรัน container |
-| Jenkins | ≥ 2.4xx | ระบบ CI/CD automation |
-| Terraform | ≥ 1.x | Provision infrastructure |
-| Ansible | ≥ 2.15 | Configure environment |
+| Docker Desktop | ≥ 24.x | รัน container และเปิด Kubernetes local |
+| Docker Compose | มากับ Docker Desktop | รันหลาย service พร้อมกัน |
+| Node.js | ≥ 18 | รัน/พัฒนา frontend และ backend |
+| npm | มากับ Node.js | ติดตั้ง dependencies |
+| Jenkins | LTS | ระบบ CI/CD automation |
 | kubectl | ≥ 1.28 | สั่งงาน Kubernetes cluster |
-| Minikube / K3s | latest | Kubernetes แบบ local |
-| Prometheus | ≥ 2.x | เก็บ metrics |
-| Grafana | ≥ 10.x | แสดง dashboard |
+| Terraform | ≥ 1.x | Infrastructure as Code |
+| Ansible | ≥ 2.15 | Configuration Management |
+| Helm | latest | ติดตั้ง kube-prometheus-stack |
+| Prometheus / Grafana | ผ่าน Helm chart | Monitoring และ Dashboard |
+
+> หมายเหตุ: โปรเจคนี้ออกแบบให้รันบน Docker Desktop Kubernetes เป็นหลัก จึงควรเปิด Docker Desktop และเปิด Kubernetes ให้พร้อมก่อน deploy
 
 ---
 
@@ -109,22 +134,33 @@ Developer
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/[username]/[project-name].git
-cd [project-name]
+git clone <repository-url>
+cd serverless-todolist-app
 ```
 
-### 2. รันแอปบนเครื่องโดยตรง (ไม่ผ่าน pipeline)
+### 2. รันแบบ Local ด้วย Docker Compose
 ```bash
-cd app
-pip install -r requirements.txt
-python app.py
-# แอปรันที่ http://localhost:5000
+docker compose up -d --build
 ```
 
-### 3. Build และรันด้วย Docker
+เมื่อรันสำเร็จจะได้ service หลักดังนี้:
+
+| Service | URL / Port |
+|---------|------------|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:8000 |
+| PostgreSQL | localhost:5432 |
+
+### 3. ตรวจสอบ Database
 ```bash
-docker build -t [username]/[app-name]:latest ./app
-docker run -p 5000:5000 [username]/[app-name]:latest
+docker compose exec db psql -U postgres -d tododb
+```
+
+หากเข้าได้และเห็น prompt `tododb=#` แปลว่า PostgreSQL พร้อมใช้งาน
+
+### 4. ปิดระบบ Local
+```bash
+docker compose down
 ```
 
 ---
@@ -133,179 +169,314 @@ docker run -p 5000:5000 [username]/[app-name]:latest
 
 ### ลำดับการทำงานของ Pipeline
 
-```
-Checkout ──▶ Build ──▶ Test ──▶ Docker Build ──▶ Push to Hub ──▶ Deploy
+```text
+Checkout ──▶ Build & Test ──▶ Docker Build ──▶ Push Hub ──▶ Provision Infra (Terraform) ──▶ Configure Env (Ansible) ──▶ Deploy to Kubernetes
 ```
 
 | Stage | คำอธิบาย |
 |-------|----------|
-| **Checkout** | ดึงโค้ดล่าสุดจาก GitHub |
-| **Build** | ติดตั้ง dependencies |
-| **Test** | รัน unit test |
-| **Docker Build** | สร้าง Docker image |
-| **Push to Hub** | อัปโหลด image ขึ้น Docker Hub |
-| **Deploy** | รัน Terraform + Ansible แล้ว apply Kubernetes manifests |
+| **Checkout** | ดึง source code ล่าสุดจาก Git |
+| **Build & Test** | จำลองการ build/test ด้วยคำสั่ง echo เนื่องจากยังไม่มี unit test จริง |
+| **Docker Build** | สร้าง image `todo-frontend` และ `todo-backend` ทั้ง tag ตาม build number และ `latest` |
+| **Push Hub** | login Docker Hub และ push image ไปที่ `pawit44/todo-frontend` และ `pawit44/todo-backend` |
+| **Provision Infra (Terraform)** | สร้างไฟล์ inventory สำหรับ Ansible ที่ `ansible/inventory` |
+| **Configure Env (Ansible)** | เตรียม directory `/tmp/k8s-deployment` และตรวจสอบว่า Ansible ทำงานได้ |
+| **Deploy to Kubernetes** | apply ไฟล์ `deployment.yaml`, `service.yaml`, และ `db.yaml` เข้า Kubernetes |
 
-### วิธีตั้งค่า Jenkins
-1. ติดตั้ง Jenkins และเปิดที่ `http://localhost:8080`
-2. ติดตั้ง plugin: **Git**, **Pipeline**, **Docker Pipeline**
-3. เพิ่ม credentials สำหรับ Docker Hub (ชื่อ `dockerhub-credentials`)
-4. สร้าง Pipeline job ใหม่ และชี้ไปที่ repository นี้
-5. ตั้งค่า Webhook ใน GitHub:
-   - ไปที่ **Settings → Webhooks → Add webhook**
-   - Payload URL: `http://[jenkins-host]:8080/github-webhook/`
-   - Content type: `application/json`
-   - ติ๊ก trigger: **Just the push event**
+### วิธีรัน Jenkins
+```bash
+docker compose -f docker-compose.jenkins.yml up --build -d
+```
+
+เปิด Jenkins ที่:
+
+```text
+http://localhost:8080
+```
+
+ดูรหัสผ่านเริ่มต้น:
+
+```bash
+docker compose -f docker-compose.jenkins.yml logs jenkins
+```
+
+### Jenkins Credentials ที่ต้องตั้งค่า
+
+เพิ่ม Docker Hub credential ใน Jenkins:
+
+| Field | Value |
+|-------|-------|
+| Kind | Username with password |
+| ID | `docker-hub-creds` |
+| Username | Docker Hub username |
+| Password | Docker Hub password/token |
+
+> ค่า `docker-hub-creds` ต้องตรงกับที่กำหนดไว้ใน `Jenkinsfile`
 
 ---
 
 ## 🏗️ Infrastructure as Code
 
 ### Terraform — Provision Infrastructure
+
+ไฟล์หลักอยู่ในโฟลเดอร์ `terraform/`
+
 ```bash
 cd terraform
 terraform init      # ดาวน์โหลด provider plugins
 terraform plan      # ตรวจสอบว่าจะสร้างอะไรบ้าง
-terraform apply     # สร้าง resource จริง
+terraform apply -auto-approve     # สร้าง resource จริง
 ```
-> **สิ่งที่ Terraform สร้าง:** [อธิบาย เช่น Docker network, Kubernetes namespace, local directory]
+
+สิ่งที่ Terraform ทำในโปรเจคนี้:
+
+- ใช้ provider `hashicorp/local`
+- สร้างไฟล์ `ansible/inventory`
+- ระบุ host เป็น `localhost ansible_connection=local`
+- output path ของ inventory ผ่าน `outputs.tf`
 
 ### Ansible — Configure Environment
+
+ไฟล์หลักอยู่ที่ `ansible/playbook.yml`
+
 ```bash
 cd ansible
 ansible-playbook -i inventory playbook.yml
 ```
-> **สิ่งที่ Ansible ทำ:** [อธิบาย เช่น ติดตั้ง kubectl, copy kubeconfig, ตั้งค่า environment variable]
 
-> ⚠️ **หมายเหตุ:** ใน pipeline จริง Jenkins จะเรียก Terraform และ Ansible อัตโนมัติในขั้นตอน Deploy ไม่ต้องรันด้วยมือ
+สิ่งที่ Ansible ทำในโปรเจคนี้:
+
+- ทำงานบน host `local`
+- สร้าง directory `/tmp/k8s-deployment`
+- แสดงข้อความยืนยันว่า configure environment สำเร็จ
+
+> ใน pipeline จริง Jenkins จะเรียก Terraform และ Ansible อัตโนมัติ ไม่จำเป็นต้องรันด้วยมือทุกครั้ง
 
 ---
 
 ## ☸️ Kubernetes Deployment
 
+### Kubernetes Resources ที่ใช้
+
+| File | Resource | หน้าที่ |
+|------|----------|---------|
+| `k8s/deployment.yaml` | Deployment `todo-app` | รัน frontend และ backend จำนวน 2 replicas |
+| `k8s/service.yaml` | Service `todo-service` | เปิด NodePort สำหรับ frontend/backend |
+| `k8s/db.yaml` | Service + Deployment `todo-db` | รัน PostgreSQL ใน Kubernetes |
+| `k8s/servicemonitor.yaml` | ServiceMonitor | ให้ Prometheus scrape backend `/metrics` |
+
 ### Apply Manifests ด้วยตัวเอง
 ```bash
+kubectl apply -f k8s/db.yaml
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 ```
 
+ถ้าเปิดใช้ monitoring แล้ว ให้ apply ServiceMonitor เพิ่ม:
+
+```bash
+kubectl apply -f k8s/servicemonitor.yaml
+```
+
 ### ตรวจสอบสถานะ
 ```bash
-kubectl get pods -n [namespace]
-kubectl get svc  -n [namespace]
+kubectl get pods
+kubectl get svc
+kubectl get deployment
 ```
 
 ### ผลลัพธ์ที่ควรจะได้
-```
-NAME                        READY   STATUS    RESTARTS   AGE
-[app-name]-xxxxxxxxx-xxxxx  1/1     Running   0          2m
-[app-name]-xxxxxxxxx-yyyyy  1/1     Running   0          2m
+```text
+NAME                            READY   STATUS    RESTARTS   AGE
+todo-app-xxxxxxxxxx-xxxxx       2/2     Running   0          2m
+todo-app-xxxxxxxxxx-yyyyy       2/2     Running   0          2m
+todo-db-xxxxxxxxxx-zzzzz        1/1     Running   0          2m
 
-NAME            TYPE       CLUSTER-IP     PORT(S)          AGE
-[app-name]-svc  NodePort   10.96.xx.xxx   5000:30080/TCP   2m
+NAME           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                       AGE
+db-service     ClusterIP   10.96.xx.xxx    <none>        5432/TCP                      2m
+todo-service   NodePort    10.96.xx.xxx    <none>        80:30080/TCP,8000:30081/TCP   2m
 ```
+
+> `todo-app` แสดง `2/2` เพราะในหนึ่ง Pod มี 2 containers คือ frontend และ backend ส่วน `todo-db` เป็น PostgreSQL แยกอีก Deployment หนึ่ง
 
 ### เข้าถึงแอปพลิเคชัน
-```
-http://localhost:30080
-```
+
+| Component | URL |
+|-----------|-----|
+| Frontend | http://localhost:30080 |
+| Backend API | http://localhost:30081 |
+| Metrics | http://localhost:30081/metrics |
 
 ---
 
 ## 📊 Monitoring
 
-### Prometheus — เก็บ Metrics
-- ไฟล์ config: `monitoring/prometheus.yml`
-- Scrape ทุก **15 วินาที**
-- Target endpoint: `http://[app-host]:[port]/metrics`
+Backend ใช้ library `prom-client` เพื่อเปิด endpoint `/metrics` ให้ Prometheus ดึงข้อมูล
 
-รัน Prometheus:
+### Metrics สำคัญของระบบ
+
+| Metric | ความหมาย |
+|--------|----------|
+| `todo_created_total` | จำนวน todo ที่ถูกสร้างสำเร็จ |
+| `todo_toggled_total` | จำนวนครั้งที่มีการ toggle done/undone |
+| `todo_deleted_total` | จำนวน todo ที่ถูกลบสำเร็จ |
+| Default Node.js metrics | CPU, memory, event loop, process metrics จาก `collectDefaultMetrics` |
+
+### ติดตั้ง Prometheus/Grafana ด้วย Helm
 ```bash
-prometheus --config.file=monitoring/prometheus.yml
-# เปิด UI ที่ http://localhost:9090
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm install monitoring prometheus-community/kube-prometheus-stack
 ```
 
-### Grafana — แสดง Dashboard
-- ไฟล์ dashboard: `monitoring/grafana-dashboard.json`
-- Data source: Prometheus (`http://localhost:9090`)
+### เปิด Grafana
+```bash
+kubectl port-forward svc/monitoring-grafana 8081:80
+```
 
-วิธี import dashboard:
-1. เปิด Grafana ที่ `http://localhost:3000`
-2. ไปที่ **Dashboards → Import**
-3. อัปโหลดไฟล์ `grafana-dashboard.json`
+เปิดเว็บ:
 
-### Panels ใน Dashboard
+```text
+http://localhost:8081
+```
 
-| Panel | Metric (PromQL) | แสดงข้อมูลอะไร |
-|-------|-----------------|----------------|
-| Request Rate | `rate(http_requests_total[1m])` | จำนวน request ต่อวินาที |
-| Error Rate | `rate(http_requests_total{status=~"5.."}[1m])` | จำนวน error 5xx ต่อวินาที |
-| Latency (p95) | `histogram_quantile(0.95, ...)` | response time ที่ percentile 95 |
-| Pod Health | `up{job="[app-name]"}` | service ขึ้นหรือล่ม (1/0) |
+ค่า login เริ่มต้นโดยทั่วไป:
+
+| Field | Value |
+|-------|-------|
+| Username | `admin` |
+| Password | `prom-operator` |
+
+### ตัวอย่าง PromQL สำหรับ Dashboard
+
+| Panel | PromQL |
+|-------|--------|
+| Total Created | `sum(todo_created_total)` |
+| Total Toggled | `sum(todo_toggled_total)` |
+| Total Deleted | `sum(todo_deleted_total)` |
+| Target Health | `up` |
 
 ---
 
 ## 🌿 Branching Strategy
 
-```
-main        ──── โค้ดที่พร้อม production, protected branch
-dev         ──── รวมโค้ดก่อน merge ขึ้น main
-feature/*   ──── พัฒนา feature แต่ละอัน (เช่น feature/add-login)
+```text
+main        ──── โค้ดที่พร้อมส่งหรือ demo
+dev         ──── branch หลักสำหรับพัฒนาและ trigger pipeline
+feature/*   ──── branch สำหรับแยกทำ feature แต่ละส่วน
 ```
 
-| Branch | Protected | คำอธิบาย |
-|--------|-----------|----------|
-| `main` | ✅ | trigger pipeline อัตโนมัติเมื่อ merge |
-| `dev` | ✅ | ทดสอบก่อน merge ขึ้น main |
-| `feature/*` | ❌ | พัฒนาแยกกันแล้วค่อย merge เข้า dev |
+| Branch | คำอธิบาย |
+|--------|----------|
+| `main` | เก็บโค้ดเวอร์ชันหลักของโปรเจค |
+| `dev` | ใช้รวมงานก่อนนำขึ้น main และใช้ทดสอบ pipeline |
+| `feature/*` | ใช้พัฒนา feature ย่อยก่อน merge เข้า dev |
 
 ---
 
 ## 🧪 API Endpoints
 
+Backend API รันที่ port `8000` ใน container และถูก expose เป็น NodePort `30081` บน Kubernetes
+
 | Method | Endpoint | คำอธิบาย |
 |--------|----------|----------|
-| `GET` | `/` | Health check — ตรวจว่าแอปยังรันอยู่ |
+| `GET` | `/todos` | ดึงรายการ todo ทั้งหมด เรียงตาม `id` |
+| `POST` | `/todos?task=<task>&prio=<low\|med\|high>&time=<HH:mm>` | เพิ่ม todo ใหม่ |
+| `PATCH` | `/todos/:id/toggle` | สลับสถานะ done/undone |
+| `DELETE` | `/todos/:id` | ลบ todo ตาม id |
 | `GET` | `/metrics` | Prometheus metrics endpoint |
-| `GET` | `/[resource]` | [อธิบาย] |
-| `POST` | `/[resource]` | [อธิบาย] |
-| `DELETE` | `/[resource]/:id` | [อธิบาย] |
+
+### ตัวอย่างการทดสอบ API
+
+```bash
+curl http://localhost:30081/todos
+```
+
+```bash
+curl -X POST "http://localhost:30081/todos?task=Read%20README&prio=high&time=10:30"
+```
+
+```bash
+curl -X PATCH http://localhost:30081/todos/1/toggle
+```
+
+```bash
+curl -X DELETE http://localhost:30081/todos/1
+```
+
+```bash
+curl http://localhost:30081/metrics
+```
 
 ---
 
 ## 🐛 ปัญหาที่พบบ่อย (Troubleshooting)
 
-**Pods ค้างอยู่ที่ `Pending` ไม่ยอม Running**
+**Jenkins เปิดไม่ขึ้น**
 ```bash
-kubectl describe pod [pod-name] -n [namespace]
-# ดูที่ Events: อาจเกิดจาก resource ไม่พอ หรือ image pull error
+docker compose -f docker-compose.jenkins.yml ps
+docker compose -f docker-compose.jenkins.yml logs jenkins
 ```
 
-**Jenkins pipeline ล้มเหลวตอน Docker Build**
+**ต้องการ restart Jenkins ใหม่**
 ```bash
-# ตรวจว่า Docker daemon รันอยู่
-sudo systemctl start docker
-# เพิ่ม jenkins user เข้า docker group
-sudo usermod -aG docker jenkins
+docker compose -f docker-compose.jenkins.yml down
+docker compose -f docker-compose.jenkins.yml up --build -d
 ```
 
-**Prometheus แสดง target เป็น DOWN**
+**Pods ไม่ขึ้นหรือค้างอยู่**
 ```bash
-# ตรวจว่าแอปเปิด /metrics ได้จริง
-curl http://localhost:5000/metrics
-# ตรวจ prometheus.yml ว่า host:port ตรงกับแอปจริง
+kubectl get pods
+kubectl describe pod <pod-name>
+kubectl logs <pod-name>
 ```
 
----
+**หน้าเว็บยังเป็นเวอร์ชันเก่า**
+```bash
+kubectl delete pods -l app=todo
+```
+
+หรือสั่ง restart deployment:
+
+```bash
+kubectl rollout restart deployment todo-app
+```
+
+**Backend ต่อ PostgreSQL ไม่ได้**
+```bash
+kubectl get svc
+kubectl logs deployment/todo-db
+kubectl logs deployment/todo-app
+```
+
+ตรวจสอบว่าใน `k8s/deployment.yaml` มีค่า:
+
+```text
+DB_HOST=db-service
+DB_USER=postgres
+DB_PASSWORD=admin1234
+DB_NAME=tododb
+```
+
+**Prometheus ไม่เจอ metrics**
+```bash
+kubectl get servicemonitor
+kubectl describe servicemonitor todo-app-monitor
+curl http://localhost:30081/metrics
+```
+
+ตรวจสอบว่า `ServiceMonitor` มี label `release: monitoring` และ selector ตรงกับ service label `app: todo-app`
+
 
 ## 📚 เอกสารอ้างอิง
 
-- [Jenkinsfile Declarative Pipeline Syntax](https://www.jenkins.io/doc/book/pipeline/syntax/)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Express Documentation](https://expressjs.com/)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [Docker Documentation](https://docs.docker.com/)
+- [Jenkins Pipeline Syntax](https://www.jenkins.io/doc/book/pipeline/syntax/)
 - [Terraform Documentation](https://developer.hashicorp.com/terraform/docs)
 - [Ansible Documentation](https://docs.ansible.com/)
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
 - [Prometheus Documentation](https://prometheus.io/docs/)
 - [Grafana Documentation](https://grafana.com/docs/)
-- [Markdown Guide](https://www.markdownguide.org/)
-- [GitHub Markdown Syntax](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax)
-
