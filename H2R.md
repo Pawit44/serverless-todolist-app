@@ -62,6 +62,8 @@ npm install prom-client
 
 ### 2. ติดตั้ง Prometheus Stack
 ```bash
+helm repo update
+cd monitoring
 helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -f values.yaml
 ```
 
