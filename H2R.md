@@ -65,6 +65,7 @@ npm install prom-client
 helm repo update
 cd monitoring
 helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -f values.yaml
+
 ```
 
 ### 3. สั่ง Prometheus ให้รู้จักแอป
