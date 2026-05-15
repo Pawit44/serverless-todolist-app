@@ -22,7 +22,6 @@
 - **ประเภท:** Web Application + REST API
 - **ภาษา / Framework:** Next.js, React, TypeScript, Node.js, Express, PostgreSQL
 - **คำอธิบาย:** โปรเจคนี้เป็นระบบจัดการรายการงานที่สามารถเพิ่มงาน เลือกระดับความสำคัญ ทำเครื่องหมายว่าเสร็จแล้ว ลบงาน และดูจำนวนงานทั้งหมดผ่านหน้าเว็บได้ ข้อมูลถูกเก็บใน PostgreSQL และ Backend มี endpoint `/metrics` สำหรับให้ Prometheus ดึงข้อมูลไปแสดงผลบน Grafana
-
 ### Architecture Diagram
 ```text
 Developer
