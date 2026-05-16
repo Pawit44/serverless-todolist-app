@@ -4,7 +4,9 @@ const cors = require('cors');
 const { Pool } = require('pg');
 
 // ==========================================
-// [ Phase 5 ] Setup Prometheus Metrics
+// [ Phase 5 ] Setup Prometheus Metrics  
+
+
 // ==========================================
 const client = require('prom-client');
 const collectDefaultMetrics = client.collectDefaultMetrics;
@@ -96,10 +98,10 @@ app.post('/todos', async (req, res) => {
   try {
     const query = `INSERT INTO todos (task, prio, time) VALUES ($1, $2, $3) RETURNING *;`;
     const result = await pool.query(query, [task, prio || 'low', time]);
-    
+
     // [ Phase 5 ] เพิ่ม Counter เมื่อมีการสร้าง Todo สำเร็จ
-    todoCreatedCounter.inc(); 
-    
+    todoCreatedCounter.inc();
+
     res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -111,7 +113,7 @@ app.patch('/todos/:id/toggle', async (req, res) => {
     const query = `UPDATE todos SET done = NOT done WHERE id = $1 RETURNING *;`;
     const result = await pool.query(query, [parseInt(req.params.id)]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
-    
+
     // [ Phase 5 ] เพิ่ม Counter เมื่อมีการกด Done/Undone สำเร็จ
     todoToggledCounter.inc();
 
@@ -125,7 +127,7 @@ app.delete('/todos/:id', async (req, res) => {
   try {
     const result = await pool.query('DELETE FROM todos WHERE id = $1 RETURNING *;', [parseInt(req.params.id)]);
     if (result.rowCount === 0) return res.status(404).json({ error: 'Not found' });
-    
+
     // [ Phase 5 ] เพิ่ม Counter เมื่อมีการลบ Todo สำเร็จ
     todoDeletedCounter.inc();
 
@@ -134,7 +136,7 @@ app.delete('/todos/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-  
+
 app.listen(PORT, () => {
   console.log(`[ SYS ] Server is running on: http://${process.env.HOST}:${PORT}`);
 });
