@@ -88,14 +88,17 @@ pipeline {
             steps {
                 echo 'Deploying to Kubernetes Cluster...'
                 dir('k8s') {
-                     // เปลี่ยนมาระบุ Path เต็มๆ /var/jenkins_home/.kube/config แบบนี้
                     sh 'sed -e "s/127.0.0.1/host.docker.internal/g" -e "s/localhost/host.docker.internal/g" /var/jenkins_home/.kube/config > ./kubeconfig-jenkins'
                     
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f deployment.yaml'
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f service.yaml'
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f ../monitoring/servicemonitor.yaml'
-                    
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f db.yaml' 
+
+                    // ─── เพิ่ม 2 บรรทัดนี้ เพื่อสั่ง Restart Deployment ให้ดึง Image ล่าสุดมาทำงาน ───
+                    sh 'kubectl --kubeconfig=./kubeconfig-jenkins rollout restart deployment/todo-frontend-deployment'
+                    sh 'kubectl --kubeconfig=./kubeconfig-jenkins rollout restart deployment/todo-backend-deployment'
+                    
                     echo 'Deployment Complete! Access at http://localhost:30080'
                 }
             }
