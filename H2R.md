@@ -80,6 +80,7 @@ kubectl apply -f servicemonitor.yaml
 kubectl port-forward svc/prometheus-grafana 3000:80
 ```
 
+
 **Terminal 2 - Backend Metrics:**
 ```bash
 kubectl port-forward svc/todo-service 8000:8000
