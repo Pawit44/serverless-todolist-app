@@ -84,7 +84,7 @@ pipeline {
             }
         }
         
-        stage('Deploy to Kubernetes') {
+        stage('Deploy to Kubernetes') { 
             steps {
                 echo 'Deploying to Kubernetes Cluster...'
                 dir('k8s') {
@@ -95,9 +95,8 @@ pipeline {
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f ../monitoring/servicemonitor.yaml'
                     sh 'kubectl --kubeconfig=./kubeconfig-jenkins apply -f db.yaml' 
 
-                    // ─── เพิ่ม 2 บรรทัดนี้ เพื่อสั่ง Restart Deployment ให้ดึง Image ล่าสุดมาทำงาน ───
-                    sh 'kubectl --kubeconfig=./kubeconfig-jenkins rollout restart deployment/todo-frontend-deployment'
-                    sh 'kubectl --kubeconfig=./kubeconfig-jenkins rollout restart deployment/todo-backend-deployment'
+                    // ─── เปลี่ยนเป็นชื่อ todo-app ตามที่ตรวจเจอในระบบ ───
+                    sh 'kubectl --kubeconfig=./kubeconfig-jenkins rollout restart deployment/todo-app -n default'
                     
                     echo 'Deployment Complete! Access at http://localhost:30080'
                 }
