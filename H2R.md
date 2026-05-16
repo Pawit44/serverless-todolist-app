@@ -73,6 +73,7 @@ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -f 
 kubectl apply -f servicemonitor.yaml
 ```
 
+
 ### 4. เปิดช่องทางเข้าถึง (Port-Forward)
 
 **Terminal 1 - Grafana:**
