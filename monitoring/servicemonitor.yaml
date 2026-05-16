@@ -12,3 +12,5 @@ spec:
     - port: api         # <--- ชื่อพอร์ตใน service.yaml (พอร์ต 8000)
       path: /metrics
       interval: 15s
+
+      
