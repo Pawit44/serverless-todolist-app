@@ -22,7 +22,6 @@ services:
       - DB_NAME=tododb
     depends_on:
       - db
-
   frontend:
     build: 
       context: ./app/frontend

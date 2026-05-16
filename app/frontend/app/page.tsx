@@ -328,7 +328,7 @@ export default function TodoPage() {
 
             {/* System Info */}
             <div className="sys-info">
-              <div className="sys-line">user@dev-machine: <span>~/projects/todos</span></div>
+              <div className="sys-line">user@dev-machine: <span>Test Run 01</span></div>
               <div className="sys-line">system: <span>GNU/Linux 6.1.0 x86_64</span> | uptime: <span>{uptime}</span></div>
               <div className="sys-line">status: <span>ACTIVE</span> | api: <span>localhost:8000</span></div>
             </div>
