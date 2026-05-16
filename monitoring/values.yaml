@@ -14,7 +14,7 @@ grafana:
         editable: true
         options:
           path: /var/lib/grafana/dashboards/default
-          
+       
   dashboards:
     default:
       node-js-dashboard:
